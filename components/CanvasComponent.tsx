@@ -1,11 +1,14 @@
 "use client";
 
-import { Canvas, PencilBrush, Shadow } from "fabric";
+import { useOptions } from "@/context/options";
+import { Canvas, PencilBrush, Rect, Shadow } from "fabric";
 import { useEffect, useRef } from "react";
 
 const CanvasComponent = () => {
   const canvasEl = useRef<HTMLCanvasElement>(null);
   const fabricCanvas = useRef<Canvas | null>(null);
+
+  const { pencilOptions, canvasOptions, addRectangle } = useOptions();
 
   const resizeCanvas = () => {
     if (canvasEl.current && fabricCanvas.current) {
@@ -21,25 +24,22 @@ const CanvasComponent = () => {
     if (!canvasEl.current) return;
 
     const canvas = new Canvas(canvasEl.current, {
-      backgroundColor: "#fffce8",
-      isDrawingMode: true,
+      backgroundColor: canvasOptions.backgroundColor,
+      isDrawingMode: canvasOptions.isDrawingMode,
+      selection: canvasOptions.selection,
     });
 
     fabricCanvas.current = canvas;
 
     const brush = new PencilBrush(canvas);
-    brush.color = "#000000";
-    brush.width = 5;
-    brush.drawStraightLine = true;
-    brush.shadow = new Shadow({
-      color: "#000000",
-      blur: 0,
-      offsetX: 0,
-      offsetY: 0,
-      affectStroke: true,
-    });
+    brush.color = pencilOptions.color;
+    brush.width = pencilOptions.width;
+    brush.drawStraightLine = pencilOptions.drawStraightLine;
+    brush.shadow = pencilOptions.shadow;
     brush.limitedToCanvasSize = true;
     canvas.freeDrawingBrush = brush;
+
+    addRectangle(canvas);
 
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
@@ -55,7 +55,7 @@ const CanvasComponent = () => {
     <div>
       <div className="flex gap-4 items-center bg-white border-b border-gray-300"></div>
 
-      <canvas ref={canvasEl} className="fixed top-0 left-0" />
+        <canvas ref={canvasEl} className="fixed top-0 left-0" />
     </div>
   );
 };
