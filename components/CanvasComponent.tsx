@@ -39,11 +39,9 @@ const CanvasComponent = () => {
       affectStroke: true,
     });
     brush.limitedToCanvasSize = true;
-
     canvas.freeDrawingBrush = brush;
-    // resizeCanvas();
-    fabricCanvas.current.setDimensions({ width: 500, height: 500 });
 
+    resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
     return () => {
@@ -55,7 +53,7 @@ const CanvasComponent = () => {
 
   return (
     <div>
-      <div className="p-4 flex gap-4 items-center bg-white border-b border-gray-300"></div>
+      <div className="flex gap-4 items-center bg-white border-b border-gray-300"></div>
 
       <canvas ref={canvasEl} className="fixed top-0 left-0" />
     </div>
