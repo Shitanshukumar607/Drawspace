@@ -1,6 +1,15 @@
-import { Rect, Canvas } from "fabric";
+import { ShapeOptions } from "@/context/optionsStore";
+import { Canvas, Rect } from "fabric";
 
-export function setupRectangleDrawing(canvas: Canvas, rectProps: any) {
+interface MouseEventWithPointer {
+  pointer: { x: number; y: number };
+}
+
+export function setupRectangleDrawing(
+  canvas: Canvas,
+  shapeOptions: ShapeOptions,
+  setSelectedTool: (tool: string) => void
+) {
   let dragging = false;
   let rect: Rect | null = null;
   let initialPos: { x: number; y: number } | null = null;
@@ -41,7 +50,7 @@ export function setupRectangleDrawing(canvas: Canvas, rectProps: any) {
     canvas.requestRenderAll();
   }
 
-  function onMouseDown(e: any) {
+  function onMouseDown(e: MouseEventWithPointer) {
     dragging = true;
     initialPos = { ...e.pointer };
 
@@ -51,12 +60,12 @@ export function setupRectangleDrawing(canvas: Canvas, rectProps: any) {
       top: initialPos.y,
       width: 0,
       height: 0,
-      ...rectProps,
+      ...shapeOptions,
     });
     canvas.add(rect);
   }
 
-  function onMouseMove(e: any) {
+  function onMouseMove(e: MouseEventWithPointer) {
     if (!dragging) return;
     requestAnimationFrame(() => update(e.pointer));
   }
@@ -68,6 +77,7 @@ export function setupRectangleDrawing(canvas: Canvas, rectProps: any) {
     } else {
       rect?.setCoords();
     }
+    setSelectedTool("pointer");
   }
 
   canvas.on("mouse:down", onMouseDown);

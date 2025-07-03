@@ -1,13 +1,20 @@
-import { Circle, Canvas } from "fabric";
+import { ShapeOptions } from "@/context/optionsStore";
+import { Canvas, Circle } from "fabric";
 
-export function setupCircleDrawing(canvas: Canvas, circleProps: any) {
-  console.log("Setting up circle drawing");
+interface MouseEventWithPointer {
+  pointer: { x: number; y: number };
+}
 
+export function setupCircleDrawing(
+  canvas: Canvas,
+  shapeOptions: ShapeOptions,
+  setSelectedTool: (tool: string) => void
+) {
   let dragging = false;
   let circle: Circle | null = null;
   let initialPos: { x: number; y: number } | null = null;
 
-  function onMouseDown(e: any) {
+  function onMouseDown(e: MouseEventWithPointer) {
     dragging = true;
     initialPos = { ...e.pointer };
     if (!initialPos) return;
@@ -17,12 +24,12 @@ export function setupCircleDrawing(canvas: Canvas, circleProps: any) {
       radius: 0,
       originX: "center",
       originY: "center",
-      ...circleProps,
+      ...shapeOptions,
     });
     canvas.add(circle);
   }
 
-  function onMouseMove(e: any) {
+  function onMouseMove(e: MouseEventWithPointer) {
     if (!dragging || !circle || !initialPos) return;
 
     const dx = e.pointer.x - initialPos.x;
@@ -42,6 +49,7 @@ export function setupCircleDrawing(canvas: Canvas, circleProps: any) {
   function onMouseUp() {
     dragging = false;
     circle?.setCoords();
+    setSelectedTool("pointer");
   }
 
   canvas.on("mouse:down", onMouseDown);

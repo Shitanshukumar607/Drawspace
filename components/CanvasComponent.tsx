@@ -13,12 +13,10 @@ const CanvasComponent = () => {
 
   const { canvasOptions, setCanvasRef } = useOptionsStore();
 
-  let currentTool = useStateStore((state: StateStore) => state.selectedTool);
+  const currentTool = useStateStore((state: StateStore) => state.selectedTool);
+  const setSelectedTool = useStateStore((s) => s.setSelectedTool);
 
-  const shapeProps = {
-    stroke: "blue",
-    strokeWidth: 2,
-  };
+  const shapeOptions = useOptionsStore((state) => state.shapeOptions);
 
   const resizeCanvas = () => {
     if (canvasEl.current && canvasInstance.current) {
@@ -56,9 +54,9 @@ const CanvasComponent = () => {
     let cleanup: (() => void) | null = null;
 
     if (currentTool === "rectangle") {
-      cleanup = setupRectangleDrawing(canvas, shapeProps);
+      cleanup = setupRectangleDrawing(canvas, shapeOptions, setSelectedTool);
     } else if (currentTool === "circle") {
-      cleanup = setupCircleDrawing(canvas, shapeProps);
+      cleanup = setupCircleDrawing(canvas, shapeOptions, setSelectedTool);
     }
 
     return () => {
