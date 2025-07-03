@@ -1,14 +1,16 @@
 "use client";
 
-import { Rect, Shadow } from "fabric";
-import React, { createContext, useState, useContext, ReactNode } from "react";
+import { Canvas, Rect, Shadow } from "fabric";
+import React, { createContext, useState, useContext, ReactNode, useRef } from "react";
 
 export interface OptionsContextType {
+  canvasRef: React.MutableRefObject<Canvas | null>;
+  setCanvasRef: (canvas: Canvas | null) => void;
   pencilOptions: PencilOptions;
   changePencilOptions: (change: Partial<PencilOptions>) => void;
   canvasOptions: CanvasOptions;
   changeCanvasOptions: (change: Partial<CanvasOptions>) => void;
-  addRectangle: (canvas: any) => void;
+  addRectangle: (canvas: Canvas) => void;
 }
 
 export interface PencilOptions {
@@ -42,7 +44,7 @@ const initialPencilOptions: PencilOptions = {
 const initialCanvasOptions = {
   backgroundColor: "#fffce8",
   isDrawingMode: false,
-  selection: true,
+  selection: false,
 };
 
 const OptionsContext = createContext<OptionsContextType | undefined>(undefined);
@@ -63,6 +65,11 @@ const OptionsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     }));
   };
 
+  const canvasRef = useRef<Canvas | null>(null);
+  const setCanvasRef = (newCanvas: Canvas | null) => {
+    canvasRef.current = newCanvas;
+  };
+
   const changePencilOptions = (change: Partial<PencilOptions>) => {
     setPencilOptions((prev) => ({
       ...prev,
@@ -70,7 +77,10 @@ const OptionsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     }));
   };
 
-  const addRectangle = (canvas: any) => {
+  const addRectangle = (canvas: Canvas | null) => {
+    if (!canvas) return;
+    console.log(`Adding rectangle to canvas`);
+
     canvasOptions.isDrawingMode = false;
     const rect = new Rect({
       left: 100,
@@ -85,6 +95,8 @@ const OptionsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <OptionsContext.Provider
       value={{
+        canvasRef,
+        setCanvasRef,
         pencilOptions,
         changePencilOptions,
         canvasOptions,

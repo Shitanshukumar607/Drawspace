@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState , Fragment} from "react";
+import React, { useState, Fragment } from "react";
 import {
   Lock,
   Hand,
@@ -16,6 +16,8 @@ import {
   Copy,
   Share2,
 } from "lucide-react";
+import { useOptions } from "@/context/options";
+import { Canvas } from "fabric";
 
 type Tool = {
   id: string;
@@ -23,17 +25,35 @@ type Tool = {
   label: string;
   isDefault?: boolean;
   special?: boolean;
+  eventListeners?: {
+    onClick?: (canvas: Canvas | null) => void;
+  };
 };
 
 const FloatingToolbar = () => {
   const [selectedTool, setSelectedTool] = useState("pointer");
   const [isLocked, setIsLocked] = useState(false);
 
+  const { addRectangle, canvasRef } = useOptions();
+
   const tools: Tool[] = [
     { id: "lock", icon: Lock, label: "Lock", special: true },
     { id: "hand", icon: Hand, label: "Hand Tool" },
     { id: "pointer", icon: MousePointer, label: "Select", isDefault: true },
-    { id: "rectangle", icon: Square, label: "Rectangle" },
+    {
+      id: "rectangle",
+      icon: Square,
+      label: "Rectangle",
+      eventListeners: {
+        onClick: (canvas: Canvas | null) => {
+          console.log("Adding rectangle");
+
+          if (canvas) {
+            addRectangle(canvas);
+          }
+        },
+      },
+    },
     { id: "diamond", icon: Diamond, label: "Diamond" },
     { id: "circle", icon: Circle, label: "Circle" },
     { id: "arrow", icon: ArrowRight, label: "Arrow" },
@@ -65,7 +85,12 @@ const FloatingToolbar = () => {
           return (
             <Fragment key={tool.id}>
               <button
-                onClick={() => handleToolClick(tool.id)}
+                onClick={() => {
+                  handleToolClick(tool.id);
+                  if (tool.eventListeners?.onClick) {
+                    tool.eventListeners.onClick(canvasRef.current);
+                  }
+                }}
                 className={`
                   relative p-2 rounded-lg transition-all duration-200 group
                   ${
