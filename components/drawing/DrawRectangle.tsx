@@ -63,6 +63,8 @@ export function setupRectangleDrawing(
       ...shapeOptions,
     });
     canvas.add(rect);
+    canvas.isDrawingMode = true;
+    canvas.selection = true;
   }
 
   function onMouseMove(e: MouseEventWithPointer) {
@@ -78,6 +80,8 @@ export function setupRectangleDrawing(
       rect?.setCoords();
     }
     setSelectedTool("pointer");
+    canvas.isDrawingMode = false;
+    canvas.selection = true;
   }
 
   canvas.on("mouse:down", onMouseDown);

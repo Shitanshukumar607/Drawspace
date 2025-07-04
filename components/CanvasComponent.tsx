@@ -1,32 +1,26 @@
 "use client";
 
 import { useOptionsStore } from "@/context/optionsStore";
-import useStateStore, { StateStore } from "@/context/stateStore";
+import useStateStore from "@/context/stateStore";
+import { resizeCanvas } from "@/utils/resizeCanvas";
 import { Canvas } from "fabric";
 import { useEffect, useRef } from "react";
 import { setupCircleDrawing } from "./drawing/DrawCircle";
+import { setupLineDrawing } from "./drawing/DrawLine";
 import { setupRectangleDrawing } from "./drawing/DrawRectangle";
+import { drawUsingPen } from "./drawing/Pen";
 
 const CanvasComponent = () => {
   const canvasEl = useRef<HTMLCanvasElement>(null);
   const canvasInstance = useRef<Canvas | null>(null);
 
-  const { canvasOptions, setCanvasRef } = useOptionsStore();
-
-  const currentTool = useStateStore((state: StateStore) => state.selectedTool);
+  const currentTool = useStateStore((s) => s.selectedTool);
   const setSelectedTool = useStateStore((s) => s.setSelectedTool);
 
-  const shapeOptions = useOptionsStore((state) => state.shapeOptions);
-
-  const resizeCanvas = () => {
-    if (canvasEl.current && canvasInstance.current) {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      canvasEl.current.width = width;
-      canvasEl.current.height = height;
-      canvasInstance.current.setDimensions({ width, height });
-    }
-  };
+  const canvasOptions = useOptionsStore((s) => s.canvasOptions);
+  const updateCanvasOptions = useOptionsStore((s) => s.updateCanvasOptions);
+  const pencilOptions = useOptionsStore((s) => s.pencilOptions);
+  const shapeOptions = useOptionsStore((s) => s.shapeOptions);
 
   useEffect(() => {
     if (!canvasEl.current || canvasInstance.current) return;
@@ -35,17 +29,20 @@ const CanvasComponent = () => {
       ...canvasOptions,
     });
     canvasInstance.current = canvas;
-    setCanvasRef?.(canvas);
 
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas(canvasEl, canvasInstance);
+    window.addEventListener("resize", () =>
+      resizeCanvas(canvasEl, canvasInstance)
+    );
 
     return () => {
-      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("resize", () =>
+        resizeCanvas(canvasEl, canvasInstance)
+      );
       canvas.dispose();
       canvasInstance.current = null;
     };
-  }, [setCanvasRef]);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasInstance.current;
@@ -53,10 +50,14 @@ const CanvasComponent = () => {
 
     let cleanup: (() => void) | null = null;
 
+    drawUsingPen(canvas, currentTool, { ...pencilOptions, ...shapeOptions });
+
     if (currentTool === "rectangle") {
       cleanup = setupRectangleDrawing(canvas, shapeOptions, setSelectedTool);
     } else if (currentTool === "circle") {
       cleanup = setupCircleDrawing(canvas, shapeOptions, setSelectedTool);
+    } else if (currentTool === "line") {
+      cleanup = setupLineDrawing(canvas, shapeOptions, setSelectedTool);
     }
 
     return () => {

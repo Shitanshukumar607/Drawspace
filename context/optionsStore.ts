@@ -1,4 +1,4 @@
-import { Canvas, Shadow } from "fabric";
+import { Canvas } from "fabric";
 import { create } from "zustand";
 
 export interface PencilOptions {
@@ -6,7 +6,20 @@ export interface PencilOptions {
   width: number;
   limitedToCanvasSize: boolean;
   drawStraightLine: boolean;
-  shadow: Shadow;
+  shadow: {
+    color: string;
+    blur: number;
+    offsetX: number;
+    offsetY: number;
+    affectStroke: boolean;
+  };
+  cornerSize: number;
+  straightLineKey: string;
+  cornerStyle: "circle" | "rect";
+  padding: number;
+  cornerStrokeColor: string;
+  cornerColor: string;
+  transparentCorners: boolean;
 }
 
 export interface ShapeOptions {
@@ -18,7 +31,6 @@ export interface ShapeOptions {
   cornerStrokeColor: string;
   cornerColor: string;
   transparentCorners: boolean;
-  cornerSize: number;
 }
 
 export interface CanvasOptions {
@@ -41,24 +53,32 @@ export interface OptionsStore {
   updateCanvasOptions: (updates: Partial<CanvasOptions>) => void;
 }
 
+const initialShapeOptions: ShapeOptions = {
+  stroke: "blue",
+  strokeWidth: 2,
+  fill: "rgba(0, 0, 255, 0.3)",
+  cornerStyle: "circle",
+  padding: 5,
+  cornerStrokeColor: "blue",
+  cornerColor: "white",
+  transparentCorners: false,
+};
+
 const initialPencilOptions: PencilOptions = {
   color: "#000000",
   width: 5,
   limitedToCanvasSize: true,
   drawStraightLine: true,
-  shadow: new Shadow({
+  straightLineKey: "shiftKey",
+  shadow: {
     color: "#000000",
     blur: 0,
     offsetX: 0,
     offsetY: 0,
     affectStroke: true,
-  }),
-};
+  },
 
-const initialShapeOptions: ShapeOptions = {
-  stroke: "blue",
-  strokeWidth: 2,
-  fill: "rgba(0, 0, 255, 0.3)",
+  // these styles arent getting applied to the pencil controls
   cornerStyle: "circle",
   padding: 5,
   cornerStrokeColor: "blue",
@@ -69,8 +89,8 @@ const initialShapeOptions: ShapeOptions = {
 
 const initialCanvasOptions: CanvasOptions = {
   backgroundColor: "#fffce8",
-  isDrawingMode: false,
-  selection: false,
+  isDrawingMode: true,
+  selection: true,
 };
 
 export const useOptionsStore = create<OptionsStore>((set) => ({

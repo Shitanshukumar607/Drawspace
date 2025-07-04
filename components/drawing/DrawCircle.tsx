@@ -27,6 +27,8 @@ export function setupCircleDrawing(
       ...shapeOptions,
     });
     canvas.add(circle);
+    canvas.isDrawingMode = true;
+    canvas.selection = true;
   }
 
   function onMouseMove(e: MouseEventWithPointer) {
@@ -50,6 +52,8 @@ export function setupCircleDrawing(
     dragging = false;
     circle?.setCoords();
     setSelectedTool("pointer");
+    canvas.isDrawingMode = false;
+    canvas.selection = true;
   }
 
   canvas.on("mouse:down", onMouseDown);
