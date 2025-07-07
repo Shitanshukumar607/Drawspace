@@ -1,74 +1,67 @@
 "use client";
 
-import { useOptionsStore } from "@/context/optionsStore";
+import { Image as KonvaImage, Layer, Line, Stage } from "react-konva";
+import { freeDrawingTool } from "./drawing/FreeDrawingTool";
 import useStateStore from "@/context/stateStore";
-import { resizeCanvas } from "@/utils/resizeCanvas";
-import { Canvas } from "fabric";
-import { useEffect, useRef } from "react";
-import { setupCircleDrawing } from "./drawing/DrawCircle";
-import { setupLineDrawing } from "./drawing/DrawLine";
-import { setupRectangleDrawing } from "./drawing/DrawRectangle";
-import { drawUsingPen } from "./drawing/Pen";
+import { drawLineTool } from "./drawing/DrawLineTool";
 
-const CanvasComponent = () => {
-  const canvasEl = useRef<HTMLCanvasElement>(null);
-  const canvasInstance = useRef<Canvas | null>(null);
+const CanvasComponent: React.FC = () => {
+  const selectedTool = useStateStore((state) => state.selectedTool);
 
-  const currentTool = useStateStore((s) => s.selectedTool);
-  const setSelectedTool = useStateStore((s) => s.setSelectedTool);
+  const freeDrawing = freeDrawingTool();
+  const drawingLines = drawLineTool();
 
-  const canvasOptions = useOptionsStore((s) => s.canvasOptions);
-  const updateCanvasOptions = useOptionsStore((s) => s.updateCanvasOptions);
-  const pencilOptions = useOptionsStore((s) => s.pencilOptions);
-  const shapeOptions = useOptionsStore((s) => s.shapeOptions);
+  let drawingTool: any;
 
-  useEffect(() => {
-    if (!canvasEl.current || canvasInstance.current) return;
-
-    const canvas = new Canvas(canvasEl.current, {
-      ...canvasOptions,
-    });
-    canvasInstance.current = canvas;
-
-    resizeCanvas(canvasEl, canvasInstance);
-    window.addEventListener("resize", () =>
-      resizeCanvas(canvasEl, canvasInstance)
-    );
-
-    return () => {
-      window.removeEventListener("resize", () =>
-        resizeCanvas(canvasEl, canvasInstance)
-      );
-      canvas.dispose();
-      canvasInstance.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    const canvas = canvasInstance.current;
-    if (!canvas) return;
-
-    let cleanup: (() => void) | null = null;
-
-    drawUsingPen(canvas, currentTool, { ...pencilOptions, ...shapeOptions });
-
-    if (currentTool === "rectangle") {
-      cleanup = setupRectangleDrawing(canvas, shapeOptions, setSelectedTool);
-    } else if (currentTool === "circle") {
-      cleanup = setupCircleDrawing(canvas, shapeOptions, setSelectedTool);
-    } else if (currentTool === "line") {
-      cleanup = setupLineDrawing(canvas, shapeOptions, setSelectedTool);
-    }
-
-    return () => {
-      cleanup?.();
-    };
-  }, [currentTool]);
+  if (selectedTool === "pen" || selectedTool === "eraser") {
+    drawingTool = freeDrawing;
+  } else if (selectedTool === "line") {
+    drawingTool = drawingLines;
+  } else {
+    drawingTool = null;
+  }
 
   return (
-    <div>
-      <canvas ref={canvasEl} className="fixed cursor-crosshair" />
-    </div>
+    <>
+      <Stage
+        width={window.innerWidth}
+        height={window.innerHeight - 25}
+        onMouseDown={drawingTool?.handlePointerDown}
+        onMouseMove={drawingTool?.handlePointerMove}
+        onMouseUp={drawingTool?.handlePointerUp}
+        onTouchStart={drawingTool?.handlePointerDown}
+        onTouchMove={drawingTool?.handlePointerMove}
+        onTouchEnd={drawingTool?.handlePointerUp}
+      >
+        <Layer>
+          {freeDrawing.canvas && (
+            <KonvaImage
+              ref={freeDrawing.imageRef}
+              image={freeDrawing.canvas}
+              x={0}
+              y={0}
+            />
+          )}
+        </Layer>
+        <Layer>
+          {drawingLines.lines.map((line, i) =>
+            line.initialX !== null &&
+            line.initialY !== null &&
+            line.x !== null &&
+            line.y !== null ? (
+              <Line
+                key={i}
+                points={[line.initialX, line.initialY, line.x, line.y]}
+                stroke="black"
+                strokeWidth={4}
+                lineCap="round"
+                lineJoin="round"
+              />
+            ) : null
+          )}
+        </Layer>
+      </Stage>
+    </>
   );
 };
 
