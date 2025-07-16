@@ -1,15 +1,17 @@
 "use client";
 
-import { Image as KonvaImage, Layer, Line, Stage } from "react-konva";
-import { freeDrawingTool } from "./drawing/FreeDrawingTool";
 import useStateStore from "@/context/stateStore";
+import { Image as KonvaImage, Layer, Line, Rect, Stage } from "react-konva";
 import { drawLineTool } from "./drawing/DrawLineTool";
+import { drawRectangleTool } from "./drawing/DrawRectangleTool";
+import { freeDrawingTool } from "./drawing/FreeDrawingTool";
 
 const CanvasComponent: React.FC = () => {
   const selectedTool = useStateStore((state) => state.selectedTool);
 
   const freeDrawing = freeDrawingTool();
   const drawingLines = drawLineTool();
+  const drawingRectangle = drawRectangleTool();
 
   let drawingTool: any;
 
@@ -17,6 +19,8 @@ const CanvasComponent: React.FC = () => {
     drawingTool = freeDrawing;
   } else if (selectedTool === "line") {
     drawingTool = drawingLines;
+  } else if (selectedTool === "rectangle") {
+    drawingTool = drawingRectangle;
   } else {
     drawingTool = null;
   }
@@ -40,6 +44,7 @@ const CanvasComponent: React.FC = () => {
               image={freeDrawing.canvas}
               x={0}
               y={0}
+              draggable={selectedTool === "pointer"}
             />
           )}
         </Layer>
@@ -56,6 +61,28 @@ const CanvasComponent: React.FC = () => {
                 strokeWidth={4}
                 lineCap="round"
                 lineJoin="round"
+                draggable={selectedTool === "pointer"}
+              />
+            ) : null
+          )}
+        </Layer>
+
+        <Layer>
+          {drawingRectangle.rectangles.map((rect, i) =>
+            rect.initialX !== null &&
+            rect.initialY !== null &&
+            rect.x !== null &&
+            rect.y !== null ? (
+              <Rect
+                key={i}
+                x={Math.min(rect.initialX, rect.x)}
+                y={Math.min(rect.initialY, rect.y)}
+                width={Math.abs(rect.x - rect.initialX)}
+                height={Math.abs(rect.y - rect.initialY)}
+                fill="transparent"
+                stroke="black"
+                strokeWidth={4}
+                draggable={selectedTool === "pointer"}
               />
             ) : null
           )}
