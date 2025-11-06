@@ -1,7 +1,8 @@
 "use client";
 
 import useStateStore from "@/context/stateStore";
-import { Image as KonvaImage, Layer, Line, Rect, Stage } from "react-konva";
+import { useEffect, useState } from "react";
+import { Layer, Line, Rect, Stage } from "react-konva";
 import { drawLineTool } from "./drawing/DrawLineTool";
 import { drawRectangleTool } from "./drawing/DrawRectangleTool";
 import { freeDrawingTool } from "./drawing/FreeDrawingTool";
@@ -9,11 +10,25 @@ import { freeDrawingTool } from "./drawing/FreeDrawingTool";
 const CanvasComponent: React.FC = () => {
   const selectedTool = useStateStore((state) => state.selectedTool);
 
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+      setHeight(window.innerHeight - 25);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const freeDrawing = freeDrawingTool();
   const drawingLines = drawLineTool();
   const drawingRectangle = drawRectangleTool();
 
-  let drawingTool: any;
+  let drawingTool;
 
   if (selectedTool === "pen" || selectedTool === "eraser") {
     drawingTool = freeDrawing;
@@ -28,8 +43,8 @@ const CanvasComponent: React.FC = () => {
   return (
     <>
       <Stage
-        width={window.innerWidth}
-        height={window.innerHeight - 25}
+        width={width}
+        height={height}
         onMouseDown={drawingTool?.handlePointerDown}
         onMouseMove={drawingTool?.handlePointerMove}
         onMouseUp={drawingTool?.handlePointerUp}
@@ -38,15 +53,20 @@ const CanvasComponent: React.FC = () => {
         onTouchEnd={drawingTool?.handlePointerUp}
       >
         <Layer>
-          {freeDrawing.canvas && (
-            <KonvaImage
-              ref={freeDrawing.imageRef}
-              image={freeDrawing.canvas}
-              x={0}
-              y={0}
-              draggable={selectedTool === "pointer"}
+          {freeDrawing.lines.map((line, i) => (
+            <Line
+              key={i}
+              points={line.points}
+              stroke="#df4b26"
+              strokeWidth={5}
+              tension={0.5}
+              lineCap="round"
+              lineJoin="round"
+              globalCompositeOperation={
+                line.tool === "eraser" ? "destination-out" : "source-over"
+              }
             />
-          )}
+          ))}
         </Layer>
         <Layer>
           {drawingLines.lines.map((line, i) =>

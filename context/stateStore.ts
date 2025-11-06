@@ -1,13 +1,15 @@
 import { create } from "zustand";
 
 export interface StateStore {
-  selectedTool: string;
-  setSelectedTool: (tool: string) => void;
+  selectedTool: "line" | "rectangle" | "pen" | "eraser" | "pointer";
+  setSelectedTool: (
+    tool: "line" | "rectangle" | "pen" | "eraser" | "pointer"
+  ) => void;
 }
 
 const useStateStore = create<StateStore>((set) => ({
   selectedTool: "line",
-  setSelectedTool: (tool: string) => set({ selectedTool: tool }),
+  setSelectedTool: (tool) => set({ selectedTool: tool }),
 }));
 
 export default useStateStore;
