@@ -9,7 +9,7 @@ interface LinePoints {
   y: number | null;
 }
 
-export function drawRectangleTool() {
+export function useDrawRectangleTool() {
   const tool = useStateStore((state) => state.selectedTool);
   const setSelectedTool = useStateStore((state) => state.setSelectedTool);
   const isDrawing = useRef(false);

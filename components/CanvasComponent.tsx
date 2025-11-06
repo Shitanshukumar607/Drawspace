@@ -3,9 +3,9 @@
 import useStateStore from "@/context/stateStore";
 import { useEffect, useState } from "react";
 import { Layer, Line, Rect, Stage } from "react-konva";
-import { drawLineTool } from "./drawing/DrawLineTool";
-import { drawRectangleTool } from "./drawing/DrawRectangleTool";
-import { freeDrawingTool } from "./drawing/FreeDrawingTool";
+import { useDrawLineTool } from "./drawing/DrawLineTool";
+import { useDrawRectangleTool } from "./drawing/DrawRectangleTool";
+import { useFreeDrawingTool } from "./drawing/FreeDrawingTool";
 
 const CanvasComponent: React.FC = () => {
   const selectedTool = useStateStore((state) => state.selectedTool);
@@ -24,9 +24,9 @@ const CanvasComponent: React.FC = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const freeDrawing = freeDrawingTool();
-  const drawingLines = drawLineTool();
-  const drawingRectangle = drawRectangleTool();
+  const freeDrawing = useFreeDrawingTool();
+  const drawingLines = useDrawLineTool();
+  const drawingRectangle = useDrawRectangleTool();
 
   let drawingTool;
 

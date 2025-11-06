@@ -7,7 +7,7 @@ interface LinePoints {
   tool: string;
 }
 
-export function freeDrawingTool() {
+export function useFreeDrawingTool() {
   const tool = useStateStore((state) => state.selectedTool);
 
   const isDrawing = useRef(false);
@@ -20,7 +20,7 @@ export function freeDrawingTool() {
     const pos = e.target.getStage()?.getPointerPosition() || null;
 
     if (!pos) return;
-    setLines([...lines, { tool, points: [pos.x, pos.y] }]);
+    setLines((prev) => [...prev, { tool, points: [pos.x, pos.y] }]);
   };
 
   const handlePointerUp = () => {
@@ -36,14 +36,20 @@ export function freeDrawingTool() {
     if (!stage) return;
 
     const point = stage.getPointerPosition();
-
     if (!point) return;
-    const lastLine = lines[lines.length - 1];
-    lastLine.points = lastLine.points.concat([point.x, point.y]);
 
-    // replace last
-    lines.splice(lines.length - 1, 1, lastLine);
-    setLines(lines.concat());
+    setLines((prev) => {
+      if (prev.length === 0) return prev;
+      // copy array and replace last line immutably
+      const next = prev.slice();
+      const last = next[next.length - 1];
+      const updatedLast: LinePoints = {
+        ...last,
+        points: last.points.concat([point.x, point.y]),
+      };
+      next[next.length - 1] = updatedLast;
+      return next;
+    });
   };
 
   return {

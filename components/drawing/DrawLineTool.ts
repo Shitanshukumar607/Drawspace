@@ -9,7 +9,7 @@ interface LinePoints {
   y: number | null;
 }
 
-export function drawLineTool() {
+export function useDrawLineTool() {
   const tool = useStateStore((state) => state.selectedTool);
   const isDrawing = useRef(false);
 
