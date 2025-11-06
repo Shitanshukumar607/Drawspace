@@ -1,6 +1,6 @@
 "use client";
 
-import useStateStore, { StateStore } from "@/context/stateStore";
+import useStateStore, { StateStore, selectedToolType } from "@/context/stateStore";
 import {
   ArrowRight,
   Circle,
@@ -21,7 +21,7 @@ import React, { Fragment, useState } from "react";
 import ToolButton from "./ToolButton"; // Adjust path if needed
 
 type Tool = {
-  id: string;
+  id: selectedToolType;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
   isDefault?: boolean;
@@ -50,7 +50,7 @@ const FloatingToolbar = () => {
     { id: "connect", icon: Share2, label: "Connect" },
   ];
 
-  const handleToolClick = (toolId: string) => {
+  const handleToolClick = (toolId: selectedToolType) => {
     if (toolId === "lock") {
       setIsLocked(!isLocked);
     } else {
