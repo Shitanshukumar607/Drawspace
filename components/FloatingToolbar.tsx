@@ -39,7 +39,7 @@ const FloatingToolbar = () => {
     { id: "pointer", icon: MousePointer, label: "Select", isDefault: true },
     { id: "rectangle", icon: Square, label: "Rectangle" },
     { id: "diamond", icon: Diamond, label: "Diamond" },
-    { id: "circle", icon: Circle, label: "Circle" },
+    { id: "ellipse", icon: Circle, label: "Ellipse" },
     { id: "arrow", icon: ArrowRight, label: "Arrow" },
     { id: "line", icon: Minus, label: "Line" },
     { id: "pen", icon: Edit3, label: "Pen" },

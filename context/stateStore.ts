@@ -9,7 +9,7 @@ export type selectedToolType =
   | "lock"
   | "hand"
   | "diamond"
-  | "circle"
+  | "ellipse"
   | "arrow"
   | "text"
   | "image"

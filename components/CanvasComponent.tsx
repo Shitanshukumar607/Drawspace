@@ -2,10 +2,11 @@
 
 import useStateStore from "@/context/stateStore";
 import { useEffect, useState } from "react";
-import { Layer, Line, Rect, Stage } from "react-konva";
+import { Ellipse, Layer, Line, Rect, Stage } from "react-konva";
 import { useDrawLineTool } from "./drawing/DrawLineTool";
 import { useDrawRectangleTool } from "./drawing/DrawRectangleTool";
 import { useFreeDrawingTool } from "./drawing/FreeDrawingTool";
+import { useEllipseTool } from "./drawing/DrawEllipseTool";
 
 const CanvasComponent: React.FC = () => {
   const selectedTool = useStateStore((state) => state.selectedTool);
@@ -27,6 +28,7 @@ const CanvasComponent: React.FC = () => {
   const freeDrawing = useFreeDrawingTool();
   const drawingLines = useDrawLineTool();
   const drawingRectangle = useDrawRectangleTool();
+  const drawingEllipse = useEllipseTool();
 
   let drawingTool;
 
@@ -36,6 +38,8 @@ const CanvasComponent: React.FC = () => {
     drawingTool = drawingLines;
   } else if (selectedTool === "rectangle") {
     drawingTool = drawingRectangle;
+  } else if (selectedTool === "ellipse") {
+    drawingTool = drawingEllipse;
   } else {
     drawingTool = null;
   }
@@ -106,6 +110,22 @@ const CanvasComponent: React.FC = () => {
               />
             ) : null
           )}
+        </Layer>
+
+        <Layer>
+          {drawingEllipse.ellipses.map((ellipse, i) => (
+            <Ellipse
+              key={i}
+              x={ellipse.x}
+              y={ellipse.y}
+              radiusX={ellipse.radiusX}
+              radiusY={ellipse.radiusY}
+              fill="transparent"
+              stroke="black"
+              strokeWidth={4}
+              draggable={selectedTool === "pointer"}
+            />
+          ))}
         </Layer>
       </Stage>
     </>
