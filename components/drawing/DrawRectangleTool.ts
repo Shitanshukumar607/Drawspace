@@ -3,15 +3,14 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
 
 interface LinePoints {
-  initialX: number | null;
-  initialY: number | null;
-  x: number | null;
-  y: number | null;
+  initialX: number;
+  initialY: number;
+  x: number;
+  y: number;
 }
 
 export function useDrawRectangleTool() {
   const tool = useStateStore((state) => state.selectedTool);
-  const setSelectedTool = useStateStore((state) => state.setSelectedTool);
   const isDrawing = useRef(false);
   const [rectangles, setRectangles] = useState<LinePoints[]>([]);
 
@@ -53,7 +52,6 @@ export function useDrawRectangleTool() {
 
   const handlePointerUp = () => {
     isDrawing.current = false;
-    setSelectedTool("pointer");
   };
 
   return { rectangles, handlePointerDown, handlePointerMove, handlePointerUp };

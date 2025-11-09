@@ -8,7 +8,6 @@ export type selectedToolType =
   | "pointer"
   | "lock"
   | "hand"
-  | "diamond"
   | "ellipse"
   | "arrow"
   | "text"

@@ -3,10 +3,10 @@
 import useStateStore from "@/context/stateStore";
 import { useEffect, useState } from "react";
 import { Ellipse, Layer, Line, Rect, Stage } from "react-konva";
+import { useEllipseTool } from "./drawing/DrawEllipseTool";
 import { useDrawLineTool } from "./drawing/DrawLineTool";
 import { useDrawRectangleTool } from "./drawing/DrawRectangleTool";
 import { useFreeDrawingTool } from "./drawing/FreeDrawingTool";
-import { useEllipseTool } from "./drawing/DrawEllipseTool";
 
 const CanvasComponent: React.FC = () => {
   const selectedTool = useStateStore((state) => state.selectedTool);
@@ -73,43 +73,33 @@ const CanvasComponent: React.FC = () => {
           ))}
         </Layer>
         <Layer>
-          {drawingLines.lines.map((line, i) =>
-            line.initialX !== null &&
-            line.initialY !== null &&
-            line.x !== null &&
-            line.y !== null ? (
-              <Line
-                key={i}
-                points={[line.initialX, line.initialY, line.x, line.y]}
-                stroke="black"
-                strokeWidth={4}
-                lineCap="round"
-                lineJoin="round"
-                draggable={selectedTool === "pointer"}
-              />
-            ) : null
-          )}
+          {drawingLines.lines.map((line, i) => (
+            <Line
+              key={i}
+              points={[line.initialX, line.initialY, line.x, line.y]}
+              stroke="black"
+              strokeWidth={4}
+              lineCap="round"
+              lineJoin="round"
+              draggable={selectedTool === "pointer"}
+            />
+          ))}
         </Layer>
 
         <Layer>
-          {drawingRectangle.rectangles.map((rect, i) =>
-            rect.initialX !== null &&
-            rect.initialY !== null &&
-            rect.x !== null &&
-            rect.y !== null ? (
-              <Rect
-                key={i}
-                x={Math.min(rect.initialX, rect.x)}
-                y={Math.min(rect.initialY, rect.y)}
-                width={Math.abs(rect.x - rect.initialX)}
-                height={Math.abs(rect.y - rect.initialY)}
-                fill="transparent"
-                stroke="black"
-                strokeWidth={4}
-                draggable={selectedTool === "pointer"}
-              />
-            ) : null
-          )}
+          {drawingRectangle.rectangles.map((rect, i) => (
+            <Rect
+              key={i}
+              x={Math.min(rect.initialX, rect.x)}
+              y={Math.min(rect.initialY, rect.y)}
+              width={Math.abs(rect.x - rect.initialX)}
+              height={Math.abs(rect.y - rect.initialY)}
+              fill="transparent"
+              stroke="black"
+              strokeWidth={4}
+              draggable={selectedTool === "pointer"}
+            />
+          ))}
         </Layer>
 
         <Layer>

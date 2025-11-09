@@ -1,11 +1,13 @@
 "use client";
 
-import useStateStore, { StateStore, selectedToolType } from "@/context/stateStore";
+import useStateStore, {
+  StateStore,
+  selectedToolType,
+} from "@/context/stateStore";
 import {
   ArrowRight,
   Circle,
   Copy,
-  Diamond,
   Edit3,
   Eraser,
   Hand,
@@ -18,7 +20,7 @@ import {
   Type,
 } from "lucide-react";
 import React, { Fragment, useState } from "react";
-import ToolButton from "./ToolButton"; // Adjust path if needed
+import ToolButton from "./ToolButton";
 
 type Tool = {
   id: selectedToolType;
@@ -38,7 +40,6 @@ const FloatingToolbar = () => {
     { id: "hand", icon: Hand, label: "Hand Tool" },
     { id: "pointer", icon: MousePointer, label: "Select", isDefault: true },
     { id: "rectangle", icon: Square, label: "Rectangle" },
-    { id: "diamond", icon: Diamond, label: "Diamond" },
     { id: "ellipse", icon: Circle, label: "Ellipse" },
     { id: "arrow", icon: ArrowRight, label: "Arrow" },
     { id: "line", icon: Minus, label: "Line" },

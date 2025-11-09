@@ -3,10 +3,10 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
 
 interface LinePoints {
-  initialX: number | null;
-  initialY: number | null;
-  x: number | null;
-  y: number | null;
+  initialX: number;
+  initialY: number;
+  x: number;
+  y: number;
 }
 
 export function useDrawLineTool() {
