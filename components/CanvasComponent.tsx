@@ -1,74 +1,134 @@
 "use client";
 
-import { useOptionsStore } from "@/context/optionsStore";
 import useStateStore from "@/context/stateStore";
-import { resizeCanvas } from "@/utils/resizeCanvas";
-import { Canvas } from "fabric";
-import { useEffect, useRef } from "react";
-import { setupCircleDrawing } from "./drawing/DrawCircle";
-import { setupLineDrawing } from "./drawing/DrawLine";
-import { setupRectangleDrawing } from "./drawing/DrawRectangle";
-import { drawUsingPen } from "./drawing/Pen";
+import { useEffect, useState } from "react";
+import { Ellipse, Layer, Line, Rect, Stage } from "react-konva";
+import { useDrawLineTool } from "./drawing/DrawLineTool";
+import { useDrawRectangleTool } from "./drawing/DrawRectangleTool";
+import { useFreeDrawingTool } from "./drawing/FreeDrawingTool";
+import { useEllipseTool } from "./drawing/DrawEllipseTool";
 
-const CanvasComponent = () => {
-  const canvasEl = useRef<HTMLCanvasElement>(null);
-  const canvasInstance = useRef<Canvas | null>(null);
+const CanvasComponent: React.FC = () => {
+  const selectedTool = useStateStore((state) => state.selectedTool);
 
-  const currentTool = useStateStore((s) => s.selectedTool);
-  const setSelectedTool = useStateStore((s) => s.setSelectedTool);
-
-  const canvasOptions = useOptionsStore((s) => s.canvasOptions);
-  const updateCanvasOptions = useOptionsStore((s) => s.updateCanvasOptions);
-  const pencilOptions = useOptionsStore((s) => s.pencilOptions);
-  const shapeOptions = useOptionsStore((s) => s.shapeOptions);
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
 
   useEffect(() => {
-    if (!canvasEl.current || canvasInstance.current) return;
-
-    const canvas = new Canvas(canvasEl.current, {
-      ...canvasOptions,
-    });
-    canvasInstance.current = canvas;
-
-    resizeCanvas(canvasEl, canvasInstance);
-    window.addEventListener("resize", () =>
-      resizeCanvas(canvasEl, canvasInstance)
-    );
-
-    return () => {
-      window.removeEventListener("resize", () =>
-        resizeCanvas(canvasEl, canvasInstance)
-      );
-      canvas.dispose();
-      canvasInstance.current = null;
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+      setHeight(window.innerHeight - 25);
     };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    const canvas = canvasInstance.current;
-    if (!canvas) return;
+  const freeDrawing = useFreeDrawingTool();
+  const drawingLines = useDrawLineTool();
+  const drawingRectangle = useDrawRectangleTool();
+  const drawingEllipse = useEllipseTool();
 
-    let cleanup: (() => void) | null = null;
+  let drawingTool;
 
-    drawUsingPen(canvas, currentTool, { ...pencilOptions, ...shapeOptions });
-
-    if (currentTool === "rectangle") {
-      cleanup = setupRectangleDrawing(canvas, shapeOptions, setSelectedTool);
-    } else if (currentTool === "circle") {
-      cleanup = setupCircleDrawing(canvas, shapeOptions, setSelectedTool);
-    } else if (currentTool === "line") {
-      cleanup = setupLineDrawing(canvas, shapeOptions, setSelectedTool);
-    }
-
-    return () => {
-      cleanup?.();
-    };
-  }, [currentTool]);
+  if (selectedTool === "pen" || selectedTool === "eraser") {
+    drawingTool = freeDrawing;
+  } else if (selectedTool === "line") {
+    drawingTool = drawingLines;
+  } else if (selectedTool === "rectangle") {
+    drawingTool = drawingRectangle;
+  } else if (selectedTool === "ellipse") {
+    drawingTool = drawingEllipse;
+  } else {
+    drawingTool = null;
+  }
 
   return (
-    <div>
-      <canvas ref={canvasEl} className="fixed cursor-crosshair" />
-    </div>
+    <>
+      <Stage
+        width={width}
+        height={height}
+        onMouseDown={drawingTool?.handlePointerDown}
+        onMouseMove={drawingTool?.handlePointerMove}
+        onMouseUp={drawingTool?.handlePointerUp}
+        onTouchStart={drawingTool?.handlePointerDown}
+        onTouchMove={drawingTool?.handlePointerMove}
+        onTouchEnd={drawingTool?.handlePointerUp}
+      >
+        <Layer>
+          {freeDrawing.lines.map((line, i) => (
+            <Line
+              key={i}
+              points={line.points}
+              stroke="#df4b26"
+              strokeWidth={5}
+              tension={0.5}
+              lineCap="round"
+              lineJoin="round"
+              globalCompositeOperation={
+                line.tool === "eraser" ? "destination-out" : "source-over"
+              }
+            />
+          ))}
+        </Layer>
+        <Layer>
+          {drawingLines.lines.map((line, i) =>
+            line.initialX !== null &&
+            line.initialY !== null &&
+            line.x !== null &&
+            line.y !== null ? (
+              <Line
+                key={i}
+                points={[line.initialX, line.initialY, line.x, line.y]}
+                stroke="black"
+                strokeWidth={4}
+                lineCap="round"
+                lineJoin="round"
+                draggable={selectedTool === "pointer"}
+              />
+            ) : null
+          )}
+        </Layer>
+
+        <Layer>
+          {drawingRectangle.rectangles.map((rect, i) =>
+            rect.initialX !== null &&
+            rect.initialY !== null &&
+            rect.x !== null &&
+            rect.y !== null ? (
+              <Rect
+                key={i}
+                x={Math.min(rect.initialX, rect.x)}
+                y={Math.min(rect.initialY, rect.y)}
+                width={Math.abs(rect.x - rect.initialX)}
+                height={Math.abs(rect.y - rect.initialY)}
+                fill="transparent"
+                stroke="black"
+                strokeWidth={4}
+                draggable={selectedTool === "pointer"}
+              />
+            ) : null
+          )}
+        </Layer>
+
+        <Layer>
+          {drawingEllipse.ellipses.map((ellipse, i) => (
+            <Ellipse
+              key={i}
+              x={ellipse.x}
+              y={ellipse.y}
+              radiusX={ellipse.radiusX}
+              radiusY={ellipse.radiusY}
+              fill="transparent"
+              stroke="black"
+              strokeWidth={4}
+              draggable={selectedTool === "pointer"}
+            />
+          ))}
+        </Layer>
+      </Stage>
+    </>
   );
 };
 

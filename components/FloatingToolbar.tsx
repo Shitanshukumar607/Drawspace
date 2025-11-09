@@ -1,12 +1,13 @@
 "use client";
 
-import useStateStore, { StateStore } from "@/context/stateStore";
+import useStateStore, { StateStore, selectedToolType } from "@/context/stateStore";
 import {
   ArrowRight,
   Circle,
   Copy,
   Diamond,
   Edit3,
+  Eraser,
   Hand,
   Image,
   Lock,
@@ -20,7 +21,7 @@ import React, { Fragment, useState } from "react";
 import ToolButton from "./ToolButton"; // Adjust path if needed
 
 type Tool = {
-  id: string;
+  id: selectedToolType;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
   isDefault?: boolean;
@@ -38,17 +39,18 @@ const FloatingToolbar = () => {
     { id: "pointer", icon: MousePointer, label: "Select", isDefault: true },
     { id: "rectangle", icon: Square, label: "Rectangle" },
     { id: "diamond", icon: Diamond, label: "Diamond" },
-    { id: "circle", icon: Circle, label: "Circle" },
+    { id: "ellipse", icon: Circle, label: "Ellipse" },
     { id: "arrow", icon: ArrowRight, label: "Arrow" },
     { id: "line", icon: Minus, label: "Line" },
     { id: "pen", icon: Edit3, label: "Pen" },
+    { id: "eraser", icon: Eraser, label: "Eraser" },
     { id: "text", icon: Type, label: "Text" },
     { id: "image", icon: Image, label: "Image" },
     { id: "duplicate", icon: Copy, label: "Duplicate" },
     { id: "connect", icon: Share2, label: "Connect" },
   ];
 
-  const handleToolClick = (toolId: string) => {
+  const handleToolClick = (toolId: selectedToolType) => {
     if (toolId === "lock") {
       setIsLocked(!isLocked);
     } else {
