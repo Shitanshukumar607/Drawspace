@@ -40,7 +40,7 @@ export function useFreeDrawingTool() {
 
     setLines((prev) => {
       if (prev.length === 0) return prev;
-      
+
       const next = prev.slice();
       const last = next[next.length - 1];
       const updatedLast: LinePoints = {

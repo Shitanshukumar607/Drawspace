@@ -2,11 +2,12 @@
 
 import useStateStore from "@/context/stateStore";
 import { useEffect, useState } from "react";
-import { Ellipse, Layer, Line, Rect, Stage } from "react-konva";
+import { Arrow, Ellipse, Layer, Line, Rect, Stage } from "react-konva";
 import { useEllipseTool } from "./drawing/DrawEllipseTool";
 import { useDrawLineTool } from "./drawing/DrawLineTool";
 import { useDrawRectangleTool } from "./drawing/DrawRectangleTool";
 import { useFreeDrawingTool } from "./drawing/FreeDrawingTool";
+import { useDrawArrowTool } from "./drawing/DrawArrowTool";
 
 const CanvasComponent: React.FC = () => {
   const selectedTool = useStateStore((state) => state.selectedTool);
@@ -29,6 +30,7 @@ const CanvasComponent: React.FC = () => {
   const drawingLines = useDrawLineTool();
   const drawingRectangle = useDrawRectangleTool();
   const drawingEllipse = useEllipseTool();
+  const drawingArrow = useDrawArrowTool();
 
   let drawingTool;
 
@@ -40,6 +42,8 @@ const CanvasComponent: React.FC = () => {
     drawingTool = drawingRectangle;
   } else if (selectedTool === "ellipse") {
     drawingTool = drawingEllipse;
+  } else if (selectedTool === "arrow") {
+    drawingTool = drawingArrow;
   } else {
     drawingTool = null;
   }
@@ -113,6 +117,30 @@ const CanvasComponent: React.FC = () => {
               fill="transparent"
               stroke="black"
               strokeWidth={4}
+              draggable={selectedTool === "pointer"}
+            />
+          ))}
+        </Layer>
+
+        <Layer>
+          {drawingArrow.arrows.map((arrow, i) => (
+            <Arrow
+              key={i}
+              x={arrow.x}
+              y={arrow.y}
+              points={arrow.points}
+              pointerAtEnding={
+                arrow.points[0] !== arrow.points[2] &&
+                arrow.points[1] !== arrow.points[3]
+              }
+              pointerLength={20}
+              pointerWidth={20}
+              tension={1}
+              fill="black"
+              stroke="black"
+              strokeWidth={4}
+              lineCap="round"
+              lineJoin="round"
               draggable={selectedTool === "pointer"}
             />
           ))}
