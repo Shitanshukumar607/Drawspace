@@ -1,21 +1,19 @@
 import useStateStore from "@/context/stateStore";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
-
-interface EllipseType {
-  initialX: number;
-  initialY: number;
-  x: number;
-  y: number;
-  radiusX: number;
-  radiusY: number;
-}
+import { EllipseShape } from "./types";
+import { createShapeId } from "./createShapeId";
 
 export function useEllipseTool() {
   const tool = useStateStore((state) => state.selectedTool);
   const isDrawing = useRef(false);
+  const currentDraw = useRef<{
+    id: string;
+    startX: number;
+    startY: number;
+  } | null>(null);
 
-  const [ellipses, setEllipses] = useState<EllipseType[]>([]);
+  const [ellipses, setEllipses] = useState<EllipseShape[]>([]);
 
   const handlePointerDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (tool !== "ellipse") return;
@@ -24,13 +22,15 @@ export function useEllipseTool() {
     const pos = e.target.getStage()?.getPointerPosition();
     if (!pos) return;
 
+    const id = createShapeId();
+    currentDraw.current = { id, startX: pos.x, startY: pos.y };
+
     setEllipses((prevEllipses) => [
       ...prevEllipses,
       {
-        initialX: pos.x,
-        initialY: pos.y,
-        x: 0,
-        y: 0,
+        id,
+        x: pos.x,
+        y: pos.y,
         radiusX: 0,
         radiusY: 0,
       },
@@ -43,27 +43,40 @@ export function useEllipseTool() {
     const pos = e.target.getStage()?.getPointerPosition();
     if (!pos) return;
 
-    setEllipses((prevEllipses) => {
-      const updated = [...prevEllipses];
-      const last = updated[updated.length - 1];
-      if (!last) return updated;
+    const current = currentDraw.current;
+    if (!current) return;
 
-      const radiusX = Math.abs(pos.x - (last.initialX || 0)) / 2;
-      const radiusY = Math.abs(pos.y - (last.initialY || 0)) / 2;
-      updated[updated.length - 1] = {
-        ...last,
-        x: (last.initialX + pos.x) / 2,
-        y: (last.initialY + pos.y) / 2,
-        radiusX,
-        radiusY,
-      };
-      return updated;
-    });
+    const { startX, startY, id } = current;
+    const radiusX = Math.max(Math.abs(pos.x - startX) / 2, 1);
+    const radiusY = Math.max(Math.abs(pos.y - startY) / 2, 1);
+    const x = (startX + pos.x) / 2;
+    const y = (startY + pos.y) / 2;
+
+    setEllipses((prevEllipses) =>
+      prevEllipses.map((ellipse) =>
+        ellipse.id === id ? { ...ellipse, x, y, radiusX, radiusY } : ellipse
+      )
+    );
   };
 
   const handlePointerUp = () => {
     isDrawing.current = false;
+    currentDraw.current = null;
   };
 
-  return { ellipses, handlePointerDown, handlePointerMove, handlePointerUp };
+  const updateEllipse = (id: string, updates: Partial<EllipseShape>) => {
+    setEllipses((prevEllipses) =>
+      prevEllipses.map((ellipse) =>
+        ellipse.id === id ? { ...ellipse, ...updates } : ellipse
+      )
+    );
+  };
+
+  return {
+    ellipses,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    updateEllipse,
+  };
 }

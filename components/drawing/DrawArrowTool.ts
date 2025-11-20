@@ -1,18 +1,14 @@
 import useStateStore from "@/context/stateStore";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
-
-interface ArrowType {
-  x: number;
-  y: number;
-  points: number[];
-}
+import { ArrowShape } from "./types";
+import { createShapeId } from "./createShapeId";
 
 export function useDrawArrowTool() {
   const tool = useStateStore((state) => state.selectedTool);
   const isDrawing = useRef(false);
 
-  const [arrows, setArrows] = useState<ArrowType[]>([]);
+  const [arrows, setArrows] = useState<ArrowShape[]>([]);
 
   const handlePointerDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (tool !== "arrow") return;
@@ -24,6 +20,7 @@ export function useDrawArrowTool() {
     setArrows((prevArrows) => [
       ...prevArrows,
       {
+        id: createShapeId(),
         x: pos.x,
         y: pos.y,
         points: [0, 0, 0, 0],
@@ -37,20 +34,32 @@ export function useDrawArrowTool() {
     const pos = e.target.getStage()?.getPointerPosition();
     if (!pos) return;
 
-    setArrows((prevArrows) => {
-      const updated = [...prevArrows];
-      const last = updated[updated.length - 1];
-      updated[updated.length - 1] = {
-        ...last,
-        points: [0, 0, pos.x - last.x, pos.y - last.y],
-      };
-      return updated;
-    });
+    setArrows((prevArrows) =>
+      prevArrows.map((arrow, index) =>
+        index === prevArrows.length - 1
+          ? { ...arrow, points: [0, 0, pos.x - arrow.x, pos.y - arrow.y] }
+          : arrow
+      )
+    );
   };
 
   const handlePointerUp = () => {
     isDrawing.current = false;
   };
 
-  return { arrows, handlePointerDown, handlePointerMove, handlePointerUp };
+  const updateArrow = (id: string, updates: Partial<ArrowShape>) => {
+    setArrows((prevArrows) =>
+      prevArrows.map((arrow) =>
+        arrow.id === id ? { ...arrow, ...updates } : arrow
+      )
+    );
+  };
+
+  return {
+    arrows,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    updateArrow,
+  };
 }

@@ -1,17 +1,14 @@
 import useStateStore from "@/context/stateStore";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
-
-interface LinePoints {
-  points: number[];
-  tool: string;
-}
+import { FreeDrawingLine } from "./types";
+import { createShapeId } from "./createShapeId";
 
 export function useFreeDrawingTool() {
   const tool = useStateStore((state) => state.selectedTool);
 
   const isDrawing = useRef(false);
-  const [lines, setLines] = useState<LinePoints[]>([]);
+  const [lines, setLines] = useState<FreeDrawingLine[]>([]);
 
   const handlePointerDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (tool !== "pen" && tool !== "eraser") return;
@@ -20,7 +17,14 @@ export function useFreeDrawingTool() {
     const pos = e.target.getStage()?.getPointerPosition() || null;
 
     if (!pos) return;
-    setLines((prev) => [...prev, { tool, points: [pos.x, pos.y] }]);
+    setLines((prev) => [
+      ...prev,
+      {
+        id: createShapeId(),
+        tool,
+        points: [pos.x, pos.y],
+      },
+    ]);
   };
 
   const handlePointerUp = () => {
@@ -43,7 +47,7 @@ export function useFreeDrawingTool() {
 
       const next = prev.slice();
       const last = next[next.length - 1];
-      const updatedLast: LinePoints = {
+      const updatedLast: FreeDrawingLine = {
         ...last,
         points: last.points.concat([point.x, point.y]),
       };
