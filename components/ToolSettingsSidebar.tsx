@@ -153,19 +153,19 @@ const ToolSettingsSidebar = () => {
                 step="10"
                 className="h-1 border-[2px] outline-none"
                 data-testid="opacity"
-                value={toolProperties.opacity}
+                value={toolProperties.opacity * 100}
                 style={{
                   background:
                     "linear-gradient(to right, var(--color-slider-track) 0%, var(--color-slider-track) 100%, var(--button-bg) 100%, var(--button-bg) 100%)",
                 }}
                 onChange={(event) =>
                   updateProperties(toolKey, {
-                    opacity: Number(event.target.value),
+                    opacity: Number(event.target.value) / 100,
                   })
                 }
               />
               <span className="min-w-8 color-black text-sm ">
-                {Math.round(toolProperties.opacity)}
+                {toolProperties.opacity * 100}
               </span>
             </div>
           </section>
