@@ -1,8 +1,9 @@
 "use client";
 
-import { Arrow, Ellipse, Line, Rect } from "react-konva";
-import { KonvaEventObject } from "konva/lib/Node";
+import { RectangleProperties } from "@/context/toolPropertiesStore";
 import Konva from "konva";
+import { KonvaEventObject } from "konva/lib/Node";
+import { Arrow, Ellipse, Line, Rect } from "react-konva";
 import {
   ArrowShape,
   EllipseShape,
@@ -22,7 +23,7 @@ export interface ShapeRefRegistry {
 }
 
 interface RectangleShapesProps {
-  rectangles: RectangleShape[];
+  rectangles: (RectangleShape & RectangleProperties)[];
   selectedShapeId: string | null;
   isPointerTool: boolean;
   onSelect: (id: string, type: TransformerSelectionType) => void;
@@ -45,15 +46,16 @@ export const RectangleShapes = ({
       <Rect
         key={rect.id}
         ref={(node) => registerRef(rect.id, node)}
-        x={rect.x}
-        y={rect.y}
-        width={rect.width}
-        height={rect.height}
-        fill="transparent"
-        stroke={selectedShapeId === rect.id ? "#1d4ed8" : "black"}
-        strokeWidth={4}
+        {...rect}
+        stroke={selectedShapeId === rect.id ? "#1d4ed8" : rect.stroke}
         draggable={isPointerTool}
         onMouseDown={(e) => {
+          if (!isPointerTool) return;
+          e.cancelBubble = true;
+          onSelect(rect.id, "rectangle");
+        }}
+        onTouchStart={(e) => {
+          if (!isPointerTool) return;
           e.cancelBubble = true;
           onSelect(rect.id, "rectangle");
         }}
@@ -97,6 +99,12 @@ export const EllipseShapes = ({
         strokeWidth={4}
         draggable={isPointerTool}
         onMouseDown={(e) => {
+          if (!isPointerTool) return;
+          e.cancelBubble = true;
+          onSelect(ellipse.id, "ellipse");
+        }}
+        onTouchStart={(e) => {
+          if (!isPointerTool) return;
           e.cancelBubble = true;
           onSelect(ellipse.id, "ellipse");
         }}

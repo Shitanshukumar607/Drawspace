@@ -3,16 +3,26 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
 import { RectangleShape } from "./types";
 import { createShapeId } from "./createShapeId";
+import useToolPropertiesStore, {
+  RectangleProperties,
+  defaultRectangleProperties,
+} from "@/context/toolPropertiesStore";
 
 export function useDrawRectangleTool() {
   const tool = useStateStore((state) => state.selectedTool);
+  const properties = useToolPropertiesStore(
+    (s) => s.properties.rectangle ?? defaultRectangleProperties
+  );
+
   const isDrawing = useRef(false);
   const currentDraw = useRef<{
     id: string;
     startX: number;
     startY: number;
   } | null>(null);
-  const [rectangles, setRectangles] = useState<RectangleShape[]>([]);
+  const [rectangles, setRectangles] = useState<
+    (RectangleShape & RectangleProperties)[]
+  >([]);
 
   const handlePointerDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (tool !== "rectangle") return;
@@ -32,6 +42,10 @@ export function useDrawRectangleTool() {
         y: pos.y,
         width: 0,
         height: 0,
+        stroke: properties.stroke,
+        fill: properties.fill,
+        strokeWidth: properties.strokeWidth,
+        opacity: properties.opacity,
       },
     ]);
   };

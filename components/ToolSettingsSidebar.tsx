@@ -3,7 +3,7 @@
 import useStateStore from "@/context/stateStore";
 import useToolPropertiesStore, { ToolKey } from "@/context/toolPropertiesStore";
 
-const strokeColors = [
+const strokes = [
   "#0f172a",
   "#ef4444",
   "#16a34a",
@@ -39,17 +39,12 @@ function isPropertyTool(tool: string): tool is ToolKey {
 
 const ToolSettingsSidebar = () => {
   const selectedTool = useStateStore((state) => state.selectedTool);
-  console.log("Selected tool:", selectedTool);
 
   const isPropTool = isPropertyTool(selectedTool);
-  console.log("Is property tool:", isPropTool);
 
-  const toolProperties = useToolPropertiesStore((state) => {
-    console.log(state.properties);
-    return isPropTool ? state.properties[selectedTool] : undefined;
-  });
-
-  console.log("Current tool properties:", toolProperties);
+  const toolProperties = useToolPropertiesStore((state) =>
+    isPropTool ? state.properties[selectedTool] : undefined
+  );
 
   const updateProperties = useToolPropertiesStore(
     (state) => state.updateProperties
@@ -60,20 +55,19 @@ const ToolSettingsSidebar = () => {
   }
 
   const toolKey: ToolKey = selectedTool;
-  console.log("Rendering ToolSettingsSidebar for tool:", toolKey);
 
   return (
     <aside className="fixed left-5 top-1/2 -translate-y-1/2 z-50 select-none">
       <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-3 flex flex-col items-start gap-3">
-        {"strokeColor" in toolProperties && (
+        {"stroke" in toolProperties && (
           <section className="flex flex-col gap-2">
             <span className="text-sm font-medium text-gray-700">Stroke</span>
             <div className="flex flex-wrap gap-2">
-              {strokeColors.map((color) => (
+              {strokes.map((color) => (
                 <div
                   key={color}
                   className={`${
-                    toolProperties.strokeColor === color
+                    toolProperties.stroke === color
                       ? "border-4 border-red-500 rounded-sm"
                       : ""
                   }`}
@@ -83,9 +77,7 @@ const ToolSettingsSidebar = () => {
                     className={`size-7 rounded-sm border hover:scale-110 transition cursor-pointer`}
                     style={{ backgroundColor: color }}
                     aria-label={`Set stroke color to ${color}`}
-                    onClick={() =>
-                      updateProperties(toolKey, { strokeColor: color })
-                    }
+                    onClick={() => updateProperties(toolKey, { stroke: color })}
                   />
                 </div>
               ))}
@@ -93,7 +85,7 @@ const ToolSettingsSidebar = () => {
           </section>
         )}
 
-        {"backgroundColor" in toolProperties && (
+        {"fill" in toolProperties && (
           <section className="flex flex-col gap-2">
             <span className="text-sm font-medium text-gray-700">
               Background
@@ -103,7 +95,7 @@ const ToolSettingsSidebar = () => {
                 <div
                   key={color}
                   className={`${
-                    toolProperties.backgroundColor === color
+                    toolProperties.fill === color
                       ? "border-4 border-red-500 rounded-sm"
                       : ""
                   }`}
@@ -117,9 +109,7 @@ const ToolSettingsSidebar = () => {
                         : { backgroundColor: color }
                     }
                     aria-label={`Set background to ${color}`}
-                    onClick={() =>
-                      updateProperties(toolKey, { backgroundColor: color })
-                    }
+                    onClick={() => updateProperties(toolKey, { fill: color })}
                   />
                 </div>
               ))}
