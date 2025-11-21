@@ -7,6 +7,7 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
 import { FreeDrawingLine } from "./types";
 import { createShapeId } from "./createShapeId";
+import { getPointerPositionRelativeToStage } from "./getPointerPosition";
 
 export function useFreeDrawingTool() {
   const tool = useStateStore((state) => state.selectedTool);
@@ -25,7 +26,8 @@ export function useFreeDrawingTool() {
     if (tool !== "pen" && tool !== "eraser") return;
 
     isDrawing.current = true;
-    const pos = e.target.getStage()?.getPointerPosition() || null;
+    const stage = e.target.getStage();
+    const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
 
     if (!pos) return;
     const lineProps =
@@ -63,7 +65,7 @@ export function useFreeDrawingTool() {
     const stage = e.target.getStage();
     if (!stage) return;
 
-    const point = stage.getPointerPosition();
+    const point = getPointerPositionRelativeToStage(stage);
     if (!point) return;
 
     setLines((prev) => {

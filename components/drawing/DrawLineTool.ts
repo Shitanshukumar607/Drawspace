@@ -7,6 +7,7 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
 import { LineShape } from "./types";
 import { createShapeId } from "./createShapeId";
+import { getPointerPositionRelativeToStage } from "./getPointerPosition";
 
 export function useDrawLineTool() {
   const tool = useStateStore((state) => state.selectedTool);
@@ -22,7 +23,8 @@ export function useDrawLineTool() {
     if (tool !== "line") return;
     isDrawing.current = true;
 
-    const pos = e.target.getStage()?.getPointerPosition();
+    const stage = e.target.getStage();
+    const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
     if (!pos) return;
 
     const newLine: LineShape & LineProperties = {
@@ -43,7 +45,8 @@ export function useDrawLineTool() {
   const handlePointerMove = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (!isDrawing.current || tool !== "line") return;
 
-    const pos = e.target.getStage()?.getPointerPosition();
+    const stage = e.target.getStage();
+    const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
     if (!pos) return;
 
     setLines((prevLines) => {

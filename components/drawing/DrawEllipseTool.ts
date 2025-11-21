@@ -7,6 +7,7 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
 import { EllipseShape } from "./types";
 import { createShapeId } from "./createShapeId";
+import { getPointerPositionRelativeToStage } from "./getPointerPosition";
 
 export function useEllipseTool() {
   const tool = useStateStore((state) => state.selectedTool);
@@ -28,7 +29,8 @@ export function useEllipseTool() {
     if (tool !== "ellipse") return;
     isDrawing.current = true;
 
-    const pos = e.target.getStage()?.getPointerPosition();
+    const stage = e.target.getStage();
+    const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
     if (!pos) return;
 
     const id = createShapeId();
@@ -53,7 +55,8 @@ export function useEllipseTool() {
   const handlePointerMove = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (!isDrawing.current || tool !== "ellipse") return;
 
-    const pos = e.target.getStage()?.getPointerPosition();
+    const stage = e.target.getStage();
+    const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
     if (!pos) return;
 
     const current = currentDraw.current;

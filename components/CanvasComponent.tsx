@@ -252,6 +252,7 @@ const CanvasComponent: React.FC = () => {
       onTouchStart={handleStagePointerDown}
       onTouchMove={handleStagePointerMove}
       onTouchEnd={handleStagePointerUp}
+      draggable={selectedTool === "hand"}
     >
       <Layer>
         <LineShapes

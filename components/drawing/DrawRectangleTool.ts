@@ -7,6 +7,7 @@ import useToolPropertiesStore, {
   RectangleProperties,
   defaultRectangleProperties,
 } from "@/context/toolPropertiesStore";
+import { getPointerPositionRelativeToStage } from "./getPointerPosition";
 
 export function useDrawRectangleTool() {
   const tool = useStateStore((state) => state.selectedTool);
@@ -28,7 +29,8 @@ export function useDrawRectangleTool() {
     if (tool !== "rectangle") return;
     isDrawing.current = true;
 
-    const pos = e.target.getStage()?.getPointerPosition();
+    const stage = e.target.getStage();
+    const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
     if (!pos) return;
 
     const id = createShapeId();
@@ -53,7 +55,8 @@ export function useDrawRectangleTool() {
   const handlePointerMove = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (!isDrawing.current || tool !== "rectangle") return;
 
-    const pos = e.target.getStage()?.getPointerPosition();
+    const stage = e.target.getStage();
+    const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
     if (!pos) return;
 
     const current = currentDraw.current;
