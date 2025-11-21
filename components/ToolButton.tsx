@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 type ToolButtonProps = {
   id: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
@@ -34,7 +32,6 @@ const ToolButton: React.FC<ToolButtonProps> = ({
       `}
       aria-pressed={isSelected}
       aria-label={label}
-      title={label}
     >
       <Icon
         size={18}

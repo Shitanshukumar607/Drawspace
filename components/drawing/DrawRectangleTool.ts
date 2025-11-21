@@ -1,18 +1,28 @@
 import useStateStore from "@/context/stateStore";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
-
-interface LinePoints {
-  initialX: number;
-  initialY: number;
-  x: number;
-  y: number;
-}
+import { RectangleShape } from "./types";
+import { createShapeId } from "./createShapeId";
+import useToolPropertiesStore, {
+  RectangleProperties,
+  defaultRectangleProperties,
+} from "@/context/toolPropertiesStore";
 
 export function useDrawRectangleTool() {
   const tool = useStateStore((state) => state.selectedTool);
+  const properties = useToolPropertiesStore(
+    (s) => s.properties.rectangle ?? defaultRectangleProperties
+  );
+
   const isDrawing = useRef(false);
-  const [rectangles, setRectangles] = useState<LinePoints[]>([]);
+  const currentDraw = useRef<{
+    id: string;
+    startX: number;
+    startY: number;
+  } | null>(null);
+  const [rectangles, setRectangles] = useState<
+    (RectangleShape & RectangleProperties)[]
+  >([]);
 
   const handlePointerDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (tool !== "rectangle") return;
@@ -21,13 +31,21 @@ export function useDrawRectangleTool() {
     const pos = e.target.getStage()?.getPointerPosition();
     if (!pos) return;
 
+    const id = createShapeId();
+    currentDraw.current = { id, startX: pos.x, startY: pos.y };
+
     setRectangles((prevRects) => [
       ...prevRects,
       {
-        initialX: pos.x,
-        initialY: pos.y,
+        id,
         x: pos.x,
         y: pos.y,
+        width: 0,
+        height: 0,
+        stroke: properties.stroke,
+        fill: properties.fill,
+        strokeWidth: properties.strokeWidth,
+        opacity: properties.opacity,
       },
     ]);
   };
@@ -38,21 +56,38 @@ export function useDrawRectangleTool() {
     const pos = e.target.getStage()?.getPointerPosition();
     if (!pos) return;
 
-    setRectangles((prevRects) => {
-      const updated = [...prevRects];
-      const last = updated[updated.length - 1];
-      updated[updated.length - 1] = {
-        ...last,
-        x: pos.x,
-        y: pos.y,
-      };
-      return updated;
-    });
+    const current = currentDraw.current;
+    if (!current) return;
+
+    const { startX, startY, id } = current;
+    const x = Math.min(startX, pos.x);
+    const y = Math.min(startY, pos.y);
+    const width = Math.max(Math.abs(pos.x - startX), 1);
+    const height = Math.max(Math.abs(pos.y - startY), 1);
+
+    setRectangles((prevRects) =>
+      prevRects.map((rect) =>
+        rect.id === id ? { ...rect, x, y, width, height } : rect
+      )
+    );
   };
 
   const handlePointerUp = () => {
     isDrawing.current = false;
+    currentDraw.current = null;
   };
 
-  return { rectangles, handlePointerDown, handlePointerMove, handlePointerUp };
+  const updateRectangle = (id: string, updates: Partial<RectangleShape>) => {
+    setRectangles((prevRects) =>
+      prevRects.map((rect) => (rect.id === id ? { ...rect, ...updates } : rect))
+    );
+  };
+
+  return {
+    rectangles,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    updateRectangle,
+  };
 }
