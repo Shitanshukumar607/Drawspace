@@ -254,6 +254,7 @@ const CanvasComponent: React.FC = () => {
       onTouchEnd={handleStagePointerUp}
     >
       <Layer>
+        <FreeDrawingLines lines={freeDrawing.lines} />
         <LineShapes
           lines={drawingLines.lines}
           isPointerTool={isPointerTool}
@@ -304,7 +305,6 @@ const CanvasComponent: React.FC = () => {
             newBox.width < 5 || newBox.height < 5 ? oldBox : newBox
           }
         />
-        <FreeDrawingLines lines={freeDrawing.lines} />
       </Layer>
     </Stage>
   );
