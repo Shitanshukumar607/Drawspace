@@ -1,6 +1,11 @@
 "use client";
 
-import { RectangleProperties } from "@/context/toolPropertiesStore";
+import {
+  ArrowProperties,
+  EllipseProperties,
+  LineProperties,
+  RectangleProperties,
+} from "@/context/toolPropertiesStore";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Arrow, Ellipse, Line, Rect } from "react-konva";
@@ -67,7 +72,7 @@ export const RectangleShapes = ({
 );
 
 interface EllipseShapesProps {
-  ellipses: EllipseShape[];
+  ellipses: (EllipseShape & EllipseProperties)[];
   selectedShapeId: string | null;
   isPointerTool: boolean;
   onSelect: (id: string, type: TransformerSelectionType) => void;
@@ -94,9 +99,10 @@ export const EllipseShapes = ({
         y={ellipse.y}
         radiusX={ellipse.radiusX}
         radiusY={ellipse.radiusY}
-        fill="transparent"
-        stroke={selectedShapeId === ellipse.id ? "#1d4ed8" : "black"}
-        strokeWidth={4}
+        fill={ellipse.fill}
+        stroke={selectedShapeId === ellipse.id ? "#1d4ed8" : ellipse.stroke}
+        strokeWidth={ellipse.strokeWidth}
+        opacity={ellipse.opacity}
         draggable={isPointerTool}
         onMouseDown={(e) => {
           if (!isPointerTool) return;
@@ -116,7 +122,7 @@ export const EllipseShapes = ({
 );
 
 interface LineShapesProps {
-  lines: LineShape[];
+  lines: (LineShape & LineProperties)[];
   selectedShapeId: string | null;
   isPointerTool: boolean;
   onSelect: (id: string, type: TransformerSelectionType) => void;
@@ -138,8 +144,9 @@ export const LineShapes = ({
         key={line.id}
         ref={(node) => registerRef(line.id, node)}
         points={[line.initialX, line.initialY, line.x, line.y]}
-        stroke={selectedShapeId === line.id ? "#1d4ed8" : "black"}
-        strokeWidth={selectedShapeId === line.id ? 5 : 4}
+        stroke={selectedShapeId === line.id ? "#1d4ed8" : line.stroke}
+        strokeWidth={line.strokeWidth}
+        opacity={line.opacity}
         lineCap="round"
         lineJoin="round"
         draggable={isPointerTool}
@@ -161,25 +168,29 @@ export const LineShapes = ({
 
 export const FreeDrawingLines = ({ lines }: { lines: FreeDrawingLine[] }) => (
   <>
-    {lines.map((line) => (
-      <Line
-        key={line.id}
-        points={line.points}
-        stroke="#df4b26"
-        strokeWidth={5}
-        tension={0.5}
-        lineCap="round"
-        lineJoin="round"
-        globalCompositeOperation={
-          line.tool === "eraser" ? "destination-out" : "source-over"
-        }
-      />
-    ))}
+    {lines.map((line) => {
+      const isEraser = line.tool === "eraser";
+      return (
+        <Line
+          key={line.id}
+          points={line.points}
+          stroke={isEraser ? undefined : line.stroke}
+          strokeWidth={line.strokeWidth}
+          opacity={line.opacity}
+          tension={0.5}
+          lineCap="round"
+          lineJoin="round"
+          globalCompositeOperation={
+            isEraser ? "destination-out" : "source-over"
+          }
+        />
+      );
+    })}
   </>
 );
 
 interface ArrowShapesProps {
-  arrows: ArrowShape[];
+  arrows: (ArrowShape & ArrowProperties)[];
   selectedShapeId: string | null;
   isPointerTool: boolean;
   onSelect: (id: string, type: TransformerSelectionType) => void;
@@ -210,9 +221,10 @@ export const ArrowShapes = ({
         pointerLength={20}
         pointerWidth={20}
         tension={1}
-        fill="black"
-        stroke={selectedShapeId === arrow.id ? "#1d4ed8" : "black"}
-        strokeWidth={selectedShapeId === arrow.id ? 5 : 4}
+        fill={selectedShapeId === arrow.id ? "#1d4ed8" : arrow.stroke}
+        stroke={selectedShapeId === arrow.id ? "#1d4ed8" : arrow.stroke}
+        strokeWidth={arrow.strokeWidth}
+        opacity={arrow.opacity}
         lineCap="round"
         lineJoin="round"
         draggable={isPointerTool}

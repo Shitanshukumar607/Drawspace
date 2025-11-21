@@ -33,7 +33,7 @@ const CanvasComponent: React.FC = () => {
   useEffect(() => {
     const handleResize = () => {
       setWidth(window.innerWidth);
-      setHeight(window.innerHeight - 25);
+      setHeight(window.innerHeight);
     };
 
     handleResize();

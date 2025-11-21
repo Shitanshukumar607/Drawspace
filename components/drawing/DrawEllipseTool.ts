@@ -1,4 +1,8 @@
 import useStateStore from "@/context/stateStore";
+import useToolPropertiesStore, {
+  EllipseProperties,
+  defaultEllipseProperties,
+} from "@/context/toolPropertiesStore";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
 import { EllipseShape } from "./types";
@@ -6,6 +10,9 @@ import { createShapeId } from "./createShapeId";
 
 export function useEllipseTool() {
   const tool = useStateStore((state) => state.selectedTool);
+  const properties = useToolPropertiesStore(
+    (s) => s.properties.ellipse ?? defaultEllipseProperties
+  );
   const isDrawing = useRef(false);
   const currentDraw = useRef<{
     id: string;
@@ -13,7 +20,9 @@ export function useEllipseTool() {
     startY: number;
   } | null>(null);
 
-  const [ellipses, setEllipses] = useState<EllipseShape[]>([]);
+  const [ellipses, setEllipses] = useState<
+    (EllipseShape & EllipseProperties)[]
+  >([]);
 
   const handlePointerDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (tool !== "ellipse") return;
@@ -33,6 +42,10 @@ export function useEllipseTool() {
         y: pos.y,
         radiusX: 0,
         radiusY: 0,
+        stroke: properties.stroke,
+        fill: properties.fill,
+        strokeWidth: properties.strokeWidth,
+        opacity: properties.opacity,
       },
     ]);
   };
@@ -64,7 +77,10 @@ export function useEllipseTool() {
     currentDraw.current = null;
   };
 
-  const updateEllipse = (id: string, updates: Partial<EllipseShape>) => {
+  const updateEllipse = (
+    id: string,
+    updates: Partial<EllipseShape & EllipseProperties>
+  ) => {
     setEllipses((prevEllipses) =>
       prevEllipses.map((ellipse) =>
         ellipse.id === id ? { ...ellipse, ...updates } : ellipse

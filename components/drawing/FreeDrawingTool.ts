@@ -1,4 +1,8 @@
 import useStateStore from "@/context/stateStore";
+import useToolPropertiesStore, {
+  defaultPenProperties,
+  defaultEraserProperties,
+} from "@/context/toolPropertiesStore";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
 import { FreeDrawingLine } from "./types";
@@ -6,6 +10,13 @@ import { createShapeId } from "./createShapeId";
 
 export function useFreeDrawingTool() {
   const tool = useStateStore((state) => state.selectedTool);
+
+  const penProperties = useToolPropertiesStore(
+    (state) => state.properties.pen ?? defaultPenProperties
+  );
+  const eraserProperties = useToolPropertiesStore(
+    (state) => state.properties.eraser ?? defaultEraserProperties
+  );
 
   const isDrawing = useRef(false);
   const [lines, setLines] = useState<FreeDrawingLine[]>([]);
@@ -17,12 +28,25 @@ export function useFreeDrawingTool() {
     const pos = e.target.getStage()?.getPointerPosition() || null;
 
     if (!pos) return;
+    const lineProps =
+      tool === "pen"
+        ? {
+            stroke: penProperties.stroke,
+            strokeWidth: penProperties.strokeWidth,
+            opacity: penProperties.opacity,
+          }
+        : {
+            strokeWidth: eraserProperties.strokeWidth,
+            opacity: eraserProperties.opacity,
+          };
+
     setLines((prev) => [
       ...prev,
       {
         id: createShapeId(),
         tool,
         points: [pos.x, pos.y],
+        ...lineProps,
       },
     ]);
   };

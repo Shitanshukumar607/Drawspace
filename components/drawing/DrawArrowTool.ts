@@ -1,4 +1,8 @@
 import useStateStore from "@/context/stateStore";
+import useToolPropertiesStore, {
+  ArrowProperties,
+  defaultArrowProperties,
+} from "@/context/toolPropertiesStore";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
 import { ArrowShape } from "./types";
@@ -6,9 +10,12 @@ import { createShapeId } from "./createShapeId";
 
 export function useDrawArrowTool() {
   const tool = useStateStore((state) => state.selectedTool);
+  const properties = useToolPropertiesStore(
+    (s) => s.properties.arrow ?? defaultArrowProperties
+  );
   const isDrawing = useRef(false);
 
-  const [arrows, setArrows] = useState<ArrowShape[]>([]);
+  const [arrows, setArrows] = useState<(ArrowShape & ArrowProperties)[]>([]);
 
   const handlePointerDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (tool !== "arrow") return;
@@ -24,6 +31,9 @@ export function useDrawArrowTool() {
         x: pos.x,
         y: pos.y,
         points: [0, 0, 0, 0],
+        stroke: properties.stroke,
+        strokeWidth: properties.strokeWidth,
+        opacity: properties.opacity,
       },
     ]);
   };
@@ -47,7 +57,10 @@ export function useDrawArrowTool() {
     isDrawing.current = false;
   };
 
-  const updateArrow = (id: string, updates: Partial<ArrowShape>) => {
+  const updateArrow = (
+    id: string,
+    updates: Partial<ArrowShape & ArrowProperties>
+  ) => {
     setArrows((prevArrows) =>
       prevArrows.map((arrow) =>
         arrow.id === id ? { ...arrow, ...updates } : arrow

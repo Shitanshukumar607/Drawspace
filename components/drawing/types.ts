@@ -2,6 +2,9 @@ export interface FreeDrawingLine {
   id: string;
   points: number[];
   tool: "pen" | "eraser";
+  strokeWidth: number;
+  opacity: number;
+  stroke?: string;
 }
 
 export interface LineShape {
