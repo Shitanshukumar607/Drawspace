@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 export interface PenProperties {
-  strokeColor: string;
+  stroke: string;
   strokeWidth: number;
   opacity: number;
 }
@@ -14,27 +14,27 @@ export interface EraserProperties {
 }
 
 export interface RectangleProperties {
-  strokeColor: string;
-  backgroundColor: string;
+  stroke: string;
+  fill: string;
   strokeWidth: number;
   opacity: number;
 }
 
 export interface EllipseProperties {
-  strokeColor: string;
-  backgroundColor: string;
+  stroke: string;
+  fill: string;
   strokeWidth: number;
   opacity: number;
 }
 
 export interface LineProperties {
-  strokeColor: string;
+  stroke: string;
   strokeWidth: number;
   opacity: number;
 }
 
 export interface ArrowProperties {
-  strokeColor: string;
+  stroke: string;
   strokeWidth: number;
   opacity: number;
 }
@@ -67,7 +67,7 @@ export type AnyToolProperties =
  * Defaults per tool — only include the fields that tool supports.
  */
 export const defaultPenProperties: PenProperties = {
-  strokeColor: "#0f172a",
+  stroke: "#0f172a",
   strokeWidth: 2,
   opacity: 1,
 };
@@ -78,27 +78,27 @@ export const defaultEraserProperties: EraserProperties = {
 };
 
 export const defaultRectangleProperties: RectangleProperties = {
-  strokeColor: "#0f172a",
-  backgroundColor: "transparent",
+  stroke: "#0f172a",
+  fill: "transparent",
   strokeWidth: 2,
   opacity: 1,
 };
 
 export const defaultEllipseProperties: EllipseProperties = {
-  strokeColor: "#0f172a",
-  backgroundColor: "transparent",
+  stroke: "#0f172a",
+  fill: "transparent",
   strokeWidth: 2,
   opacity: 1,
 };
 
 export const defaultLineProperties: LineProperties = {
-  strokeColor: "#0f172a",
+  stroke: "#0f172a",
   strokeWidth: 2,
   opacity: 1,
 };
 
 export const defaultArrowProperties: ArrowProperties = {
-  strokeColor: "#0f172a",
+  stroke: "#0f172a",
   strokeWidth: 2,
   opacity: 1,
 };
