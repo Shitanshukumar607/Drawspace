@@ -174,7 +174,7 @@ export const FreeDrawingLines = ({ lines }: { lines: FreeDrawingLine[] }) => (
         <Line
           key={line.id}
           points={line.points}
-          stroke={isEraser ? undefined : line.stroke}
+          stroke={isEraser ? "#000000" : line.stroke}
           strokeWidth={line.strokeWidth}
           opacity={line.opacity}
           tension={0.5}

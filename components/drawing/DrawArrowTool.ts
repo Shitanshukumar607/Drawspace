@@ -7,6 +7,7 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
 import { ArrowShape } from "./types";
 import { createShapeId } from "./createShapeId";
+import { getPointerPositionRelativeToStage } from "./getPointerPosition";
 
 export function useDrawArrowTool() {
   const tool = useStateStore((state) => state.selectedTool);
@@ -21,7 +22,8 @@ export function useDrawArrowTool() {
     if (tool !== "arrow") return;
     isDrawing.current = true;
 
-    const pos = e.target.getStage()?.getPointerPosition();
+    const stage = e.target.getStage();
+    const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
     if (!pos) return;
 
     setArrows((prevArrows) => [
@@ -41,7 +43,8 @@ export function useDrawArrowTool() {
   const handlePointerMove = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (!isDrawing.current || tool !== "arrow") return;
 
-    const pos = e.target.getStage()?.getPointerPosition();
+    const stage = e.target.getStage();
+    const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
     if (!pos) return;
 
     setArrows((prevArrows) =>
