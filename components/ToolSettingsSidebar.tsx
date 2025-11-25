@@ -60,82 +60,80 @@ const ToolSettingsSidebar = () => {
     <aside className="fixed left-5 top-1/2 -translate-y-1/2 z-50 select-none">
       <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-3 flex flex-col items-start gap-3">
         {"stroke" in toolProperties && (
-          <section className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-gray-700">Stroke</span>
+          <section className="flex flex-col gap-3">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Stroke
+            </span>
             <div className="flex flex-wrap gap-2">
               {strokes.map((color) => (
-                <div
+                <button
                   key={color}
-                  className={`${
+                  type="button"
+                  className={`size-8 rounded-full border border-gray-200 hover:scale-110 transition-all cursor-pointer ${
                     toolProperties.stroke === color
-                      ? "border-4 border-red-500 rounded-sm"
+                      ? "ring-2 ring-offset-2 ring-gray-900 border-transparent"
                       : ""
                   }`}
-                >
-                  <button
-                    type="button"
-                    className={`size-7 rounded-sm border hover:scale-110 transition cursor-pointer`}
-                    style={{ backgroundColor: color }}
-                    aria-label={`Set stroke color to ${color}`}
-                    onClick={() => updateProperties(toolKey, { stroke: color })}
-                  />
-                </div>
+                  style={{ backgroundColor: color }}
+                  aria-label={`Set stroke color to ${color}`}
+                  onClick={() => updateProperties(toolKey, { stroke: color })}
+                />
               ))}
             </div>
           </section>
         )}
 
         {"fill" in toolProperties && (
-          <section className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-gray-700">
+          <section className="flex flex-col gap-3">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
               Background
             </span>
             <div className="flex flex-wrap gap-2">
               {backgroundColors.map((color) => (
-                <div
+                <button
                   key={color}
-                  className={`${
+                  type="button"
+                  className={`size-8 rounded-full border border-gray-200 hover:scale-110 transition-all cursor-pointer ${
                     toolProperties.fill === color
-                      ? "border-4 border-red-500 rounded-sm"
+                      ? "ring-2 ring-offset-2 ring-gray-900 border-transparent"
                       : ""
                   }`}
-                >
-                  <button
-                    type="button"
-                    className={`size-7 rounded-sm border hover:scale-110 transition cursor-pointer`}
-                    style={
-                      color === "transparent"
-                        ? createCheckboard()
-                        : { backgroundColor: color }
-                    }
-                    aria-label={`Set background to ${color}`}
-                    onClick={() => updateProperties(toolKey, { fill: color })}
-                  />
-                </div>
+                  style={
+                    color === "transparent"
+                      ? createCheckboard()
+                      : { backgroundColor: color }
+                  }
+                  aria-label={`Set background to ${color}`}
+                  onClick={() => updateProperties(toolKey, { fill: color })}
+                />
               ))}
             </div>
           </section>
         )}
 
         {toolProperties.strokeWidth !== undefined && (
-          <section className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-gray-700">
+          <section className="flex flex-col gap-3">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
               Stroke width
             </span>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
               {strokeWidths.map((width) => (
                 <button
                   key={width}
                   type="button"
-                  className={`size-7 rounded-sm border hover:scale-110 transition cursor-pointer flex justify-center items-center text-center ${
-                    toolProperties.strokeWidth === width ? "selected" : ""
+                  className={`size-8 rounded-md border border-gray-200 hover:bg-gray-50 transition-all cursor-pointer flex justify-center items-center ${
+                    toolProperties.strokeWidth === width
+                      ? "bg-gray-100 ring-2 ring-gray-900 border-transparent"
+                      : ""
                   }`}
-                  style={{ fontSize: `${width * 8}px` }}
                   onClick={() =>
                     updateProperties(toolKey, { strokeWidth: width })
                   }
                 >
-                  -
+                  <div
+                    className="bg-gray-800 rounded-full"
+                    style={{ width: width * 2, height: width * 2 }}
+                  />
                 </button>
               ))}
             </div>
@@ -143,29 +141,27 @@ const ToolSettingsSidebar = () => {
         )}
 
         {toolProperties.opacity !== undefined && (
-          <section className="flex flex-col">
-            <span className="text-sm font-medium text-gray-700">Opacity</span>
-            <div className="relative flex items-center gap-2">
+          <section className="flex flex-col gap-3">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Opacity
+            </span>
+            <div className="flex items-center gap-3">
               <input
                 type="range"
                 min="0"
                 max="100"
                 step="10"
-                className="h-1 border-[2px] outline-none"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-900"
                 data-testid="opacity"
                 value={toolProperties.opacity * 100}
-                style={{
-                  background:
-                    "linear-gradient(to right, var(--color-slider-track) 0%, var(--color-slider-track) 100%, var(--button-bg) 100%, var(--button-bg) 100%)",
-                }}
                 onChange={(event) =>
                   updateProperties(toolKey, {
                     opacity: Number(event.target.value) / 100,
                   })
                 }
               />
-              <span className="min-w-8 color-black text-sm ">
-                {toolProperties.opacity * 100}
+              <span className="text-xs font-medium text-gray-600 min-w-[2rem] text-right">
+                {Math.round(toolProperties.opacity * 100)}%
               </span>
             </div>
           </section>
