@@ -7,7 +7,7 @@ const instructions: Record<selectedToolType, string> = {
   line: "Click and drag to create a line",
   rectangle: "Click and drag to create a rectangle",
   pen: "Click and drag to draw freely",
-  eraser: "Click on an object to remove it",
+  eraser: "Click and drag to erase",
   pointer: "Click to select an object",
   lock: "Lock is yet to be implemented",
   hand: "Click and drag to move the canvas",

@@ -21,7 +21,7 @@ export interface StateStore {
 }
 
 const useStateStore = create<StateStore>((set) => ({
-  selectedTool: "line",
+  selectedTool: "pen",
   setSelectedTool: (tool) => set({ selectedTool: tool }),
 }));
 

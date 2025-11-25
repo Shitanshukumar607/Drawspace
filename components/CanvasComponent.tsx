@@ -297,6 +297,7 @@ const CanvasComponent: React.FC = () => {
           registerRef={registerShapeRef}
           onDragEnd={handleArrowDragEnd}
         />
+        <FreeDrawingLines lines={freeDrawing.lines} />
         <Transformer
           ref={transformerRef}
           rotateEnabled={false}
@@ -305,9 +306,6 @@ const CanvasComponent: React.FC = () => {
             newBox.width < 5 || newBox.height < 5 ? oldBox : newBox
           }
         />
-      </Layer>
-      <Layer>
-        <FreeDrawingLines lines={freeDrawing.lines} />
       </Layer>
     </Stage>
   );
