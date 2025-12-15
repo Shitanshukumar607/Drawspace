@@ -1,7 +1,10 @@
 "use client";
 
 import useStateStore from "@/context/stateStore";
-import useToolPropertiesStore, { ToolKey } from "@/context/toolPropertiesStore";
+import useToolPropertiesStore, {
+  RectangleProperties,
+  ToolKey,
+} from "@/context/toolPropertiesStore";
 
 const strokes = [
   "#0f172a",
@@ -21,7 +24,9 @@ const backgroundColors = [
   "#f3f4f6",
 ];
 
-const strokeWidths = [2, 4, 6];
+const strokeWidths = [4, 6, 8];
+
+const cornerRadii = [2, 13, 24];
 
 const createCheckboard = () => ({
   backgroundImage:
@@ -55,6 +60,8 @@ const ToolSettingsSidebar = () => {
   }
 
   const toolKey: ToolKey = selectedTool;
+  const rectangleProps: RectangleProperties | null =
+    toolKey === "rectangle" ? (toolProperties as RectangleProperties) : null;
 
   return (
     <aside className="fixed left-5 top-1/2 -translate-y-1/2 z-50 select-none">
@@ -134,6 +141,33 @@ const ToolSettingsSidebar = () => {
                     className="bg-gray-800 rounded-full"
                     style={{ width: width * 2, height: width * 2 }}
                   />
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {rectangleProps && (
+          <section className="flex flex-col gap-3">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Corner radius
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {cornerRadii.map((radius) => (
+                <button
+                  key={radius}
+                  type="button"
+                  className={`px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 transition-all cursor-pointer text-xs font-medium ${
+                    rectangleProps.cornerRadius === radius
+                      ? "bg-gray-100 ring-2 ring-gray-900 border-transparent"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    updateProperties(toolKey, { cornerRadius: radius })
+                  }
+                  aria-label={`Set corner radius to ${radius}px`}
+                >
+                  {radius}px
                 </button>
               ))}
             </div>

@@ -47,6 +47,7 @@ export function useDrawRectangleTool() {
         stroke: properties.stroke,
         fill: properties.fill,
         strokeWidth: properties.strokeWidth,
+        cornerRadius: properties.cornerRadius,
         opacity: properties.opacity,
       },
     ]);
