@@ -15,7 +15,7 @@ import {
   FreeDrawingLine,
   LineShape,
   RectangleShape,
-} from "./drawing/types";
+} from "../types/types";
 
 export type TransformerSelectionType =
   | "rectangle"

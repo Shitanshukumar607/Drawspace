@@ -14,11 +14,11 @@ import {
   ShapeRefRegistry,
   TransformerSelectionType,
 } from "./CanvasShapeRenderers";
-import { useDrawArrowTool } from "./drawing/DrawArrowTool";
-import { useEllipseTool } from "./drawing/DrawEllipseTool";
-import { useDrawLineTool } from "./drawing/DrawLineTool";
-import { useDrawRectangleTool } from "./drawing/DrawRectangleTool";
-import { useFreeDrawingTool } from "./drawing/FreeDrawingTool";
+import { useDrawArrowTool } from "../hooks/DrawArrowTool";
+import { useEllipseTool } from "../hooks/DrawEllipseTool";
+import { useDrawLineTool } from "../hooks/DrawLineTool";
+import { useDrawRectangleTool } from "../hooks/DrawRectangleTool";
+import { useFreeDrawingTool } from "../hooks/FreeDrawingTool";
 
 type SelectedTransformableShape = {
   id: string;

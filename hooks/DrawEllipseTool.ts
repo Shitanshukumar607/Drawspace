@@ -1,32 +1,32 @@
 import useStateStore from "@/context/stateStore";
+import useToolPropertiesStore, {
+  EllipseProperties,
+  defaultEllipseProperties,
+} from "@/context/toolPropertiesStore";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
-import { RectangleShape } from "./types";
+import { EllipseShape } from "../types/types";
 import { createShapeId } from "./createShapeId";
-import useToolPropertiesStore, {
-  RectangleProperties,
-  defaultRectangleProperties,
-} from "@/context/toolPropertiesStore";
 import { getPointerPositionRelativeToStage } from "./getPointerPosition";
 
-export function useDrawRectangleTool() {
+export function useEllipseTool() {
   const tool = useStateStore((state) => state.selectedTool);
   const properties = useToolPropertiesStore(
-    (s) => s.properties.rectangle ?? defaultRectangleProperties
+    (s) => s.properties.ellipse ?? defaultEllipseProperties
   );
-
   const isDrawing = useRef(false);
   const currentDraw = useRef<{
     id: string;
     startX: number;
     startY: number;
   } | null>(null);
-  const [rectangles, setRectangles] = useState<
-    (RectangleShape & RectangleProperties)[]
+
+  const [ellipses, setEllipses] = useState<
+    (EllipseShape & EllipseProperties)[]
   >([]);
 
   const handlePointerDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
-    if (tool !== "rectangle") return;
+    if (tool !== "ellipse") return;
     isDrawing.current = true;
 
     const stage = e.target.getStage();
@@ -36,14 +36,14 @@ export function useDrawRectangleTool() {
     const id = createShapeId();
     currentDraw.current = { id, startX: pos.x, startY: pos.y };
 
-    setRectangles((prevRects) => [
-      ...prevRects,
+    setEllipses((prevEllipses) => [
+      ...prevEllipses,
       {
         id,
         x: pos.x,
         y: pos.y,
-        width: 0,
-        height: 0,
+        radiusX: 0,
+        radiusY: 0,
         stroke: properties.stroke,
         fill: properties.fill,
         strokeWidth: properties.strokeWidth,
@@ -53,7 +53,7 @@ export function useDrawRectangleTool() {
   };
 
   const handlePointerMove = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
-    if (!isDrawing.current || tool !== "rectangle") return;
+    if (!isDrawing.current || tool !== "ellipse") return;
 
     const stage = e.target.getStage();
     const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
@@ -63,14 +63,14 @@ export function useDrawRectangleTool() {
     if (!current) return;
 
     const { startX, startY, id } = current;
-    const x = Math.min(startX, pos.x);
-    const y = Math.min(startY, pos.y);
-    const width = Math.max(Math.abs(pos.x - startX), 1);
-    const height = Math.max(Math.abs(pos.y - startY), 1);
+    const radiusX = Math.max(Math.abs(pos.x - startX) / 2, 1);
+    const radiusY = Math.max(Math.abs(pos.y - startY) / 2, 1);
+    const x = (startX + pos.x) / 2;
+    const y = (startY + pos.y) / 2;
 
-    setRectangles((prevRects) =>
-      prevRects.map((rect) =>
-        rect.id === id ? { ...rect, x, y, width, height } : rect
+    setEllipses((prevEllipses) =>
+      prevEllipses.map((ellipse) =>
+        ellipse.id === id ? { ...ellipse, x, y, radiusX, radiusY } : ellipse
       )
     );
   };
@@ -80,17 +80,22 @@ export function useDrawRectangleTool() {
     currentDraw.current = null;
   };
 
-  const updateRectangle = (id: string, updates: Partial<RectangleShape>) => {
-    setRectangles((prevRects) =>
-      prevRects.map((rect) => (rect.id === id ? { ...rect, ...updates } : rect))
+  const updateEllipse = (
+    id: string,
+    updates: Partial<EllipseShape & EllipseProperties>
+  ) => {
+    setEllipses((prevEllipses) =>
+      prevEllipses.map((ellipse) =>
+        ellipse.id === id ? { ...ellipse, ...updates } : ellipse
+      )
     );
   };
 
   return {
-    rectangles,
+    ellipses,
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,
-    updateRectangle,
+    updateEllipse,
   };
 }
