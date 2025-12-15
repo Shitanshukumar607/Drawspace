@@ -300,8 +300,17 @@ const CanvasComponent: React.FC = () => {
         <FreeDrawingLines lines={freeDrawing.lines} />
         <Transformer
           ref={transformerRef}
-          rotateEnabled={false}
+          rotateEnabled={true}
           enabledAnchors={transformerAnchors}
+          anchorFill="#0ea5e9"
+          anchorStroke="#0f172a"
+          anchorStrokeWidth={2}
+          anchorSize={12}
+          anchorCornerRadius={6}
+          borderEnabled
+          borderStroke="#0ea5e9"
+          borderStrokeWidth={1.5}
+          padding={10}
           boundBoxFunc={(oldBox, newBox) =>
             newBox.width < 5 || newBox.height < 5 ? oldBox : newBox
           }
