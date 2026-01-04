@@ -21,6 +21,7 @@ export interface RectangleShape {
   y: number;
   width: number;
   height: number;
+  cornerRadius: number;
 }
 
 export interface EllipseShape {

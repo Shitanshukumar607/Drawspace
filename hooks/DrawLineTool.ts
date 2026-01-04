@@ -5,7 +5,7 @@ import useToolPropertiesStore, {
 } from "@/context/toolPropertiesStore";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useRef, useState } from "react";
-import { LineShape } from "./types";
+import { LineShape } from "../types/types";
 import { createShapeId } from "./createShapeId";
 import { getPointerPositionRelativeToStage } from "./getPointerPosition";
 

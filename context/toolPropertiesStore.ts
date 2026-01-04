@@ -17,6 +17,7 @@ export interface RectangleProperties {
   stroke: string;
   fill: string;
   strokeWidth: number;
+  cornerRadius: number;
   opacity: number;
 }
 
@@ -81,6 +82,7 @@ export const defaultRectangleProperties: RectangleProperties = {
   stroke: "#0f172a",
   fill: "transparent",
   strokeWidth: 2,
+  cornerRadius: 8,
   opacity: 1,
 };
 

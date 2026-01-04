@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Drawspace",
-  description: "Draw literally anything",
+  title: "Drawspace - Draw literally anything",
+  description: "Drawspace is a creative drawing platform where you can sketch, design, and create anything you imagine. Perfect for artists, designers, and creative minds.",
 };
 
 export default function RootLayout({

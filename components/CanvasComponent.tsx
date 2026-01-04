@@ -14,11 +14,11 @@ import {
   ShapeRefRegistry,
   TransformerSelectionType,
 } from "./CanvasShapeRenderers";
-import { useDrawArrowTool } from "./drawing/DrawArrowTool";
-import { useEllipseTool } from "./drawing/DrawEllipseTool";
-import { useDrawLineTool } from "./drawing/DrawLineTool";
-import { useDrawRectangleTool } from "./drawing/DrawRectangleTool";
-import { useFreeDrawingTool } from "./drawing/FreeDrawingTool";
+import { useDrawArrowTool } from "../hooks/DrawArrowTool";
+import { useEllipseTool } from "../hooks/DrawEllipseTool";
+import { useDrawLineTool } from "../hooks/DrawLineTool";
+import { useDrawRectangleTool } from "../hooks/DrawRectangleTool";
+import { useFreeDrawingTool } from "../hooks/FreeDrawingTool";
 
 type SelectedTransformableShape = {
   id: string;
@@ -29,6 +29,9 @@ const CanvasComponent: React.FC = () => {
   const selectedTool = useStateStore((state) => state.selectedTool);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
+  const [stageScale, setStageScale] = useState(1);
+  const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -55,6 +58,19 @@ const CanvasComponent: React.FC = () => {
   const drawingArrow = useDrawArrowTool();
 
   const isPointerTool = selectedTool === "pointer";
+
+  const SCALE_BY = 1.05;
+  const MIN_SCALE = 0.25;
+  const MAX_SCALE = 4;
+
+  const getCursorForTool = () => {
+    if (selectedTool === "hand") return isPanning ? "grabbing" : "grab";
+    if (selectedTool === "pointer") return "default";
+    if (selectedTool === "text") return "text";
+    if (selectedTool === "image" || selectedTool === "duplicate") return "copy";
+    if (selectedTool === "lock") return "not-allowed";
+    return "crosshair";
+  };
 
   useEffect(() => {
     if (!selectedTransformableShape) {
@@ -84,6 +100,12 @@ const CanvasComponent: React.FC = () => {
       setSelectedTransformableShape(null);
     }
   }, [isPointerTool]);
+
+  useEffect(() => {
+    const container = stageRef.current?.container();
+    if (!container) return;
+    container.style.cursor = getCursorForTool();
+  }, [selectedTool, isPanning]);
 
   const registerShapeRef: ShapeRefRegistry = (id, node) => {
     if (node) {
@@ -155,6 +177,51 @@ const CanvasComponent: React.FC = () => {
 
   const handleStagePointerUp = () => {
     drawingTool?.handlePointerUp();
+  };
+
+  const handleStageWheel = (e: KonvaEventObject<WheelEvent>) => {
+    e.evt.preventDefault();
+
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    const pointer = stage.getPointerPosition();
+    if (!pointer) return;
+
+    const oldScale = stageScale;
+    const direction = e.evt.deltaY > 0 ? -1 : 1;
+    const newScaleRaw =
+      direction > 0 ? oldScale * SCALE_BY : oldScale / SCALE_BY;
+    const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, newScaleRaw));
+
+    const mousePointTo = {
+      x: (pointer.x - stagePosition.x) / oldScale,
+      y: (pointer.y - stagePosition.y) / oldScale,
+    };
+
+    const newPos = {
+      x: pointer.x - mousePointTo.x * newScale,
+      y: pointer.y - mousePointTo.y * newScale,
+    };
+
+    setStageScale(newScale);
+    setStagePosition(newPos);
+  };
+
+  const handleStageDragMove = (e: KonvaEventObject<DragEvent>) => {
+    const stage = e.target as Konva.Stage;
+    setStagePosition({ x: stage.x(), y: stage.y() });
+  };
+
+  const handleStageDragStart = () => {
+    if (selectedTool === "hand") {
+      setIsPanning(true);
+    }
+  };
+
+  const handleStageDragEnd = (e: KonvaEventObject<DragEvent>) => {
+    handleStageDragMove(e);
+    setIsPanning(false);
   };
 
   const handleRectangleDragEnd = (id: string, e: KonvaEventObject<Event>) => {
@@ -246,12 +313,20 @@ const CanvasComponent: React.FC = () => {
       ref={stageRef}
       width={width}
       height={height}
+      scaleX={stageScale}
+      scaleY={stageScale}
+      x={stagePosition.x}
+      y={stagePosition.y}
       onMouseDown={handleStagePointerDown}
       onMouseMove={handleStagePointerMove}
       onMouseUp={handleStagePointerUp}
       onTouchStart={handleStagePointerDown}
       onTouchMove={handleStagePointerMove}
       onTouchEnd={handleStagePointerUp}
+      onWheel={handleStageWheel}
+      onDragStart={handleStageDragStart}
+      onDragMove={handleStageDragMove}
+      onDragEnd={handleStageDragEnd}
       draggable={selectedTool === "hand"}
     >
       <Layer>
@@ -300,8 +375,17 @@ const CanvasComponent: React.FC = () => {
         <FreeDrawingLines lines={freeDrawing.lines} />
         <Transformer
           ref={transformerRef}
-          rotateEnabled={false}
+          rotateEnabled={true}
           enabledAnchors={transformerAnchors}
+          anchorFill="#0ea5e9"
+          anchorStroke="#0f172a"
+          anchorStrokeWidth={2}
+          anchorSize={12}
+          anchorCornerRadius={6}
+          borderEnabled
+          borderStroke="#0ea5e9"
+          borderStrokeWidth={1.5}
+          padding={10}
           boundBoxFunc={(oldBox, newBox) =>
             newBox.width < 5 || newBox.height < 5 ? oldBox : newBox
           }
