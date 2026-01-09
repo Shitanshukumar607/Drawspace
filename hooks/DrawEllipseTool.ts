@@ -1,11 +1,10 @@
 import useStateStore from "@/context/stateStore";
 import useToolPropertiesStore, {
-  EllipseProperties,
   defaultEllipseProperties,
 } from "@/context/toolPropertiesStore";
+import useHistoryStore, { EllipseShapeWithProps } from "@/context/historyStore";
 import { KonvaEventObject } from "konva/lib/Node";
-import { useRef, useState } from "react";
-import { EllipseShape } from "../types/types";
+import { useRef } from "react";
 import { createShapeId } from "./createShapeId";
 import { getPointerPositionRelativeToStage } from "./getPointerPosition";
 
@@ -14,6 +13,12 @@ export function useEllipseTool() {
   const properties = useToolPropertiesStore(
     (s) => s.properties.ellipse ?? defaultEllipseProperties
   );
+
+  const ellipses = useHistoryStore((state) => state.current.ellipses);
+  const addEllipse = useHistoryStore((state) => state.addEllipse);
+  const updateEllipseInStore = useHistoryStore((state) => state.updateEllipse);
+  const saveToHistory = useHistoryStore((state) => state.saveToHistory);
+
   const isDrawing = useRef(false);
   const currentDraw = useRef<{
     id: string;
@@ -21,12 +26,12 @@ export function useEllipseTool() {
     startY: number;
   } | null>(null);
 
-  const [ellipses, setEllipses] = useState<
-    (EllipseShape & EllipseProperties)[]
-  >([]);
-
   const handlePointerDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (tool !== "ellipse") return;
+
+    // Save current state before starting new drawing
+    saveToHistory();
+
     isDrawing.current = true;
 
     const stage = e.target.getStage();
@@ -36,20 +41,17 @@ export function useEllipseTool() {
     const id = createShapeId();
     currentDraw.current = { id, startX: pos.x, startY: pos.y };
 
-    setEllipses((prevEllipses) => [
-      ...prevEllipses,
-      {
-        id,
-        x: pos.x,
-        y: pos.y,
-        radiusX: 0,
-        radiusY: 0,
-        stroke: properties.stroke,
-        fill: properties.fill,
-        strokeWidth: properties.strokeWidth,
-        opacity: properties.opacity,
-      },
-    ]);
+    addEllipse({
+      id,
+      x: pos.x,
+      y: pos.y,
+      radiusX: 0,
+      radiusY: 0,
+      stroke: properties.stroke,
+      fill: properties.fill,
+      strokeWidth: properties.strokeWidth,
+      opacity: properties.opacity,
+    });
   };
 
   const handlePointerMove = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
@@ -68,11 +70,7 @@ export function useEllipseTool() {
     const x = (startX + pos.x) / 2;
     const y = (startY + pos.y) / 2;
 
-    setEllipses((prevEllipses) =>
-      prevEllipses.map((ellipse) =>
-        ellipse.id === id ? { ...ellipse, x, y, radiusX, radiusY } : ellipse
-      )
-    );
+    updateEllipseInStore(id, { x, y, radiusX, radiusY });
   };
 
   const handlePointerUp = () => {
@@ -82,13 +80,10 @@ export function useEllipseTool() {
 
   const updateEllipse = (
     id: string,
-    updates: Partial<EllipseShape & EllipseProperties>
+    updates: Partial<EllipseShapeWithProps>
   ) => {
-    setEllipses((prevEllipses) =>
-      prevEllipses.map((ellipse) =>
-        ellipse.id === id ? { ...ellipse, ...updates } : ellipse
-      )
-    );
+    saveToHistory();
+    updateEllipseInStore(id, updates);
   };
 
   return {

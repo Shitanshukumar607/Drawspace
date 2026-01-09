@@ -1,11 +1,10 @@
 import useStateStore from "@/context/stateStore";
 import useToolPropertiesStore, {
-  LineProperties,
   defaultLineProperties,
 } from "@/context/toolPropertiesStore";
+import useHistoryStore, { LineShapeWithProps } from "@/context/historyStore";
 import { KonvaEventObject } from "konva/lib/Node";
-import { useRef, useState } from "react";
-import { LineShape } from "../types/types";
+import { useRef } from "react";
 import { createShapeId } from "./createShapeId";
 import { getPointerPositionRelativeToStage } from "./getPointerPosition";
 
@@ -14,20 +13,28 @@ export function useDrawLineTool() {
   const properties = useToolPropertiesStore(
     (s) => s.properties.line ?? defaultLineProperties
   );
+
+  const lines = useHistoryStore((state) => state.current.lines);
+  const addLine = useHistoryStore((state) => state.addLine);
+  const updateLineInStore = useHistoryStore((state) => state.updateLine);
+  const saveToHistory = useHistoryStore((state) => state.saveToHistory);
+
   const isDrawing = useRef(false);
   const currentLineId = useRef<string | null>(null);
 
-  const [lines, setLines] = useState<(LineShape & LineProperties)[]>([]);
-
   const handlePointerDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (tool !== "line") return;
+
+    // Save current state before starting new drawing
+    saveToHistory();
+
     isDrawing.current = true;
 
     const stage = e.target.getStage();
     const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
     if (!pos) return;
 
-    const newLine: LineShape & LineProperties = {
+    const newLine: LineShapeWithProps = {
       id: createShapeId(),
       initialX: pos.x,
       initialY: pos.y,
@@ -38,7 +45,7 @@ export function useDrawLineTool() {
       opacity: properties.opacity,
     };
 
-    setLines((prevLines) => [...prevLines, newLine]);
+    addLine(newLine);
     currentLineId.current = newLine.id;
   };
 
@@ -49,14 +56,9 @@ export function useDrawLineTool() {
     const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
     if (!pos) return;
 
-    setLines((prevLines) => {
-      if (!currentLineId.current) return prevLines;
-      return prevLines.map((line) =>
-        line.id === currentLineId.current
-          ? { ...line, x: pos.x, y: pos.y }
-          : line
-      );
-    });
+    if (currentLineId.current) {
+      updateLineInStore(currentLineId.current, { x: pos.x, y: pos.y });
+    }
   };
 
   const handlePointerUp = () => {
@@ -64,13 +66,9 @@ export function useDrawLineTool() {
     currentLineId.current = null;
   };
 
-  const updateLine = (
-    id: string,
-    updates: Partial<LineShape & LineProperties>
-  ) => {
-    setLines((prevLines) =>
-      prevLines.map((line) => (line.id === id ? { ...line, ...updates } : line))
-    );
+  const updateLine = (id: string, updates: Partial<LineShapeWithProps>) => {
+    saveToHistory();
+    updateLineInStore(id, updates);
   };
 
   return {
