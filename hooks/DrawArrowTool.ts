@@ -1,11 +1,10 @@
 import useStateStore from "@/context/stateStore";
 import useToolPropertiesStore, {
-  ArrowProperties,
   defaultArrowProperties,
 } from "@/context/toolPropertiesStore";
+import useHistoryStore, { ArrowShapeWithProps } from "@/context/historyStore";
 import { KonvaEventObject } from "konva/lib/Node";
-import { useRef, useState } from "react";
-import { ArrowShape } from "../types/types";
+import { useRef } from "react";
 import { createShapeId } from "./createShapeId";
 import { getPointerPositionRelativeToStage } from "./getPointerPosition";
 
@@ -14,30 +13,39 @@ export function useDrawArrowTool() {
   const properties = useToolPropertiesStore(
     (s) => s.properties.arrow ?? defaultArrowProperties
   );
-  const isDrawing = useRef(false);
 
-  const [arrows, setArrows] = useState<(ArrowShape & ArrowProperties)[]>([]);
+  const arrows = useHistoryStore((state) => state.current.arrows);
+  const addArrow = useHistoryStore((state) => state.addArrow);
+  const updateArrowInStore = useHistoryStore((state) => state.updateArrow);
+  const saveToHistory = useHistoryStore((state) => state.saveToHistory);
+
+  const isDrawing = useRef(false);
+  const currentArrowId = useRef<string | null>(null);
 
   const handlePointerDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (tool !== "arrow") return;
+
+    // Save current state before starting new drawing
+    saveToHistory();
+
     isDrawing.current = true;
 
     const stage = e.target.getStage();
     const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
     if (!pos) return;
 
-    setArrows((prevArrows) => [
-      ...prevArrows,
-      {
-        id: createShapeId(),
-        x: pos.x,
-        y: pos.y,
-        points: [0, 0, 0, 0],
-        stroke: properties.stroke,
-        strokeWidth: properties.strokeWidth,
-        opacity: properties.opacity,
-      },
-    ]);
+    const id = createShapeId();
+    currentArrowId.current = id;
+
+    addArrow({
+      id,
+      x: pos.x,
+      y: pos.y,
+      points: [0, 0, 0, 0],
+      stroke: properties.stroke,
+      strokeWidth: properties.strokeWidth,
+      opacity: properties.opacity,
+    });
   };
 
   const handlePointerMove = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
@@ -47,28 +55,24 @@ export function useDrawArrowTool() {
     const pos = stage ? getPointerPositionRelativeToStage(stage) : null;
     if (!pos) return;
 
-    setArrows((prevArrows) =>
-      prevArrows.map((arrow, index) =>
-        index === prevArrows.length - 1
-          ? { ...arrow, points: [0, 0, pos.x - arrow.x, pos.y - arrow.y] }
-          : arrow
-      )
-    );
+    if (currentArrowId.current) {
+      const arrow = arrows.find((a) => a.id === currentArrowId.current);
+      if (arrow) {
+        updateArrowInStore(currentArrowId.current, {
+          points: [0, 0, pos.x - arrow.x, pos.y - arrow.y],
+        });
+      }
+    }
   };
 
   const handlePointerUp = () => {
     isDrawing.current = false;
+    currentArrowId.current = null;
   };
 
-  const updateArrow = (
-    id: string,
-    updates: Partial<ArrowShape & ArrowProperties>
-  ) => {
-    setArrows((prevArrows) =>
-      prevArrows.map((arrow) =>
-        arrow.id === id ? { ...arrow, ...updates } : arrow
-      )
-    );
+  const updateArrow = (id: string, updates: Partial<ArrowShapeWithProps>) => {
+    saveToHistory();
+    updateArrowInStore(id, updates);
   };
 
   return {

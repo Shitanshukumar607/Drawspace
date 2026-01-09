@@ -3,9 +3,9 @@ import useToolPropertiesStore, {
   defaultPenProperties,
   defaultEraserProperties,
 } from "@/context/toolPropertiesStore";
+import useHistoryStore from "@/context/historyStore";
 import { KonvaEventObject } from "konva/lib/Node";
-import { useRef, useState } from "react";
-import { FreeDrawingLine } from "../types/types";
+import { useRef } from "react";
 import { createShapeId } from "./createShapeId";
 import { getPointerPositionRelativeToStage } from "./getPointerPosition";
 
@@ -19,11 +19,20 @@ export function useFreeDrawingTool() {
     (state) => state.properties.eraser ?? defaultEraserProperties
   );
 
+  const lines = useHistoryStore((state) => state.current.freeDrawingLines);
+  const addLine = useHistoryStore((state) => state.addFreeDrawingLine);
+  const updateLastLine = useHistoryStore(
+    (state) => state.updateLastFreeDrawingLine
+  );
+  const saveToHistory = useHistoryStore((state) => state.saveToHistory);
+
   const isDrawing = useRef(false);
-  const [lines, setLines] = useState<FreeDrawingLine[]>([]);
 
   const handlePointerDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (tool !== "pen" && tool !== "eraser") return;
+
+    // Save current state before starting new drawing
+    saveToHistory();
 
     isDrawing.current = true;
     const stage = e.target.getStage();
@@ -42,15 +51,12 @@ export function useFreeDrawingTool() {
             opacity: eraserProperties.opacity,
           };
 
-    setLines((prev) => [
-      ...prev,
-      {
-        id: createShapeId(),
-        tool,
-        points: [pos.x, pos.y],
-        ...lineProps,
-      },
-    ]);
+    addLine({
+      id: createShapeId(),
+      tool,
+      points: [pos.x, pos.y],
+      ...lineProps,
+    });
   };
 
   const handlePointerUp = () => {
@@ -68,18 +74,10 @@ export function useFreeDrawingTool() {
     const point = getPointerPositionRelativeToStage(stage);
     if (!point) return;
 
-    setLines((prev) => {
-      if (prev.length === 0) return prev;
-
-      const next = prev.slice();
-      const last = next[next.length - 1];
-      const updatedLast: FreeDrawingLine = {
-        ...last,
-        points: last.points.concat([point.x, point.y]),
-      };
-      next[next.length - 1] = updatedLast;
-      return next;
-    });
+    updateLastLine((line) => ({
+      ...line,
+      points: line.points.concat([point.x, point.y]),
+    }));
   };
 
   return {
